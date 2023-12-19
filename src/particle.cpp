@@ -1,27 +1,19 @@
 #include <iostream>
 #include <array>
 
-#include "../include/particle.h"
+#include "Particle.h"
 
 // Constructor definition
-Particle::Particle(const std::array<double, 3>& initial_position, const std::array<double, 3>& initial_velocity, float mass)
+Particle::Particle(const std::array<double, 3>& initial_position, const std::array<double, 3>& initial_velocity, double mass)
     : position(initial_position), velocity(initial_velocity), mass(mass) {};
 
-// Update the position of the particle based on the current velocity
-void Particle::update_position(const float timestep) {
+// Update the particle
+void Particle::update(const std::array<double, 3>& force, double timestep) {
 
-    for (int i=0; i<3; ++i) {
-        position[i] += (velocity[i] * timestep);
-    };
-
-};
-
-// Update the velocity of the particle based on the force experienced by the particle
-void Particle::update_velocity(const std::array<double, 3>& force, float timestep) {
-
-    int a;
+    double a_i;  // A value used to get the accelerations at the ith direction
     for (int i=0; i<3; i++) {
-        a = force[i] / mass;
-        velocity[i] += (a * timestep);
+        a_i = force[i] / mass;  // Get acceleration
+        velocity[i] += (a_i * timestep);  // Update velocity
+        position[i] += (velocity[i] * timestep) + 0.5 * (a_i * (timestep * timestep));  // Update position with: x(t) = x[t-1] + v*t + v*t^2
     };
-};
+}
