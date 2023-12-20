@@ -1,7 +1,7 @@
 #include <iostream>
 #include <array>
 
-#include "Particle.h"
+#include "../include/Particle.h"
 
 // Constructor definition
 Particle::Particle(const std::array<double, 3>& initial_position, const std::array<double, 3>& initial_velocity, double mass)

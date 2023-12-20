@@ -1,6 +1,6 @@
 #include <iostream>
 #include <vector>
-#include "Particle.h"
+#include "./particle.h"
 
 
 class GravitationalEnvironment{
@@ -12,7 +12,8 @@ class GravitationalEnvironment{
         // Define member functions
         std::vector<std::array<double, 3>> getForces(const double timestep);
         void updateAll(const std::vector<std::array<double, 3>>& forces, const double timestep);
-        void step (const double timestep);
+        void step(const double timestep);
+        void reset();
 
         // Instantiation of the physical members
         std::vector<Particle> particles;

@@ -2,7 +2,7 @@
 #include <array>
 #include <vector>
 #include <math.h>
-#include "Environment.h"
+#include "../include/environment.h"
 
 double G = 6.6743e-11;
 
@@ -20,14 +20,13 @@ std::vector<std::array<double, 3>> GravitationalEnvironment::getForces(const dou
     // Iterate through and find each source contribution
     double prop_to_force;  // Gmm
     double r_dep; // rhat // r^2
-    for (int i = 0; i < n_particles; i++){
-        for (int j = i; j < n_particles; j++){
+    for (int i = 0; i < n_particles; i++) {
+        for (int j = i; j < n_particles; j++) {
 
             // Only calculate Gmm
             prop_to_force = G * particles[i].mass * particles[j].mass;
 
-
-            for (int k = 0; k < 3; j++){
+            for (int k = 0; k < 3; k++) {
                 // r-dependence
                 r_dep = (particles[i].position[k] - particles[j].position[k]) / pow(particles[i].position[k] - particles[j].position[k], 3);
 
@@ -59,4 +58,12 @@ void GravitationalEnvironment::step(const double timestep) {
 
     // Update time
     time += timestep;
+}
+
+
+// Reset the environment
+void GravitationalEnvironment::reset() {
+
+    time = 0;
+
 }
