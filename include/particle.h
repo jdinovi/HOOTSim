@@ -7,10 +7,10 @@ class Particle {
     
     public:
         // Constructors
-        Particle(const std::array<double, 3>& initial_position, const std::array<double, 3>& initial_velocity, double mass);
+        Particle(const std::array<double, 3>* initial_position, const std::array<double, 3>* initial_velocity, double mass);
 
         // Define member functions
-        void update (const std::array<double, 3>& force, const double timestep);
+        void update (const std::array<double, 3>* force, const double timestep);
 
         // Instantiation of the physical members
         std::array<double, 3> position;
