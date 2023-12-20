@@ -35,13 +35,3 @@ int main() {
     return 0;
 
 };
-
-
-
-    // for (int i=0; i<5; i++) {
-    //     // Update the particle
-    //     particle1.update(&force, timestep);
-    // }
-
-    // // Define the force
-    // std::array<double, 3> force = {3, 0, 0};

@@ -32,3 +32,6 @@
 *.app
 
 .DS_Store
+bin
+obj
+obj_test
