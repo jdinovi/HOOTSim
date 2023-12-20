@@ -8,8 +8,8 @@ double G = 6.6743e-11;
 
 
 // Constructor definition
-GravitationalEnvironment::GravitationalEnvironment(const std::vector<Particle>& particles)
-    : particles(particles), time(0) {};
+GravitationalEnvironment::GravitationalEnvironment(const std::vector<Particle*>& particlePtrs)
+    : particlePtrs(particlePtrs), time(0) {};
 
 
 // Get the forces in the environment
@@ -21,14 +21,14 @@ std::vector<std::array<double, 3>> GravitationalEnvironment::getForces(const dou
     double prop_to_force;  // Gmm
     double r_dep; // rhat // r^2
     for (int i = 0; i < n_particles; i++) {
-        for (int j = i; j < n_particles; j++) {
+        for (int j = i + 1; j < n_particles; j++) {
 
             // Only calculate Gmm
-            prop_to_force = G * particles[i].mass * particles[j].mass;
+            prop_to_force = G * particlePtrs[i]->mass * particlePtrs[j]->mass;
 
             for (int k = 0; k < 3; k++) {
                 // r-dependence
-                r_dep = (particles[i].position[k] - particles[j].position[k]) / pow(particles[i].position[k] - particles[j].position[k], 3);
+                r_dep = (particlePtrs[i]->position[k] - particlePtrs[j]->position[k]) / pow(particlePtrs[i]->position[k] - particlePtrs[j]->position[k], 3);
 
                 // Update forces (opposite and equal)
                 forces[i][k] = prop_to_force * r_dep;
@@ -42,9 +42,9 @@ std::vector<std::array<double, 3>> GravitationalEnvironment::getForces(const dou
 
 
 // Update each particle in the environment
-void GravitationalEnvironment::updateAll(const std::vector<std::array<double, 3>>& forces, const double timestep) {
+void GravitationalEnvironment::updateAll(const std::vector<std::array<double, 3>>* forces, const double timestep) {
     for (int i = 0; i < n_particles; i++){
-        particles[i].update(forces[i], timestep);
+        particlePtrs[i]->update(&((*forces)[i]), timestep);
     }
 }
 
@@ -54,7 +54,7 @@ void GravitationalEnvironment::step(const double timestep) {
 
     // Get the forces and upate everything
     std::vector<std::array<double, 3>> forces = getForces(timestep);
-    updateAll(forces, timestep);
+    updateAll(&forces, timestep);
 
     // Update time
     time += timestep;
