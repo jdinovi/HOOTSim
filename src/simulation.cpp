@@ -8,7 +8,7 @@
 int main() {
 
     // Parameters for simulation
-    float timestep = 1;
+    float timestep = 0.5;
 
     // Initialize particle specs
     double mass = 1E10;
@@ -24,13 +24,13 @@ int main() {
     std::vector<Particle*> particles = {&particle1, &particle2};
     
     // Initialize an environment
-    GravitationalEnvironment env1(particles);
+    GravitationalEnvironment env1(particles, true);
 
     // Take a step
-    env1.step(timestep);
+    env1.simulate(3, timestep);
 
-    std::cout << particle1.position[0] << "\n";
-    std::cout << particle2.position[0];
+    // std::cout << particle1.position[0] << "\n";
+    // std::cout << particle2.position[0];
 
     return 0;
 
