@@ -1,4 +1,3 @@
-#include <iostream>
 #include <array>
 
 #include "../include/particle.h"

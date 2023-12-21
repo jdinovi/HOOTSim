@@ -39,18 +39,24 @@ $(TEST_OBJ_DIR)/%.o: $(TEST_DIR)/%.cpp
 # Ensure directories exist
 $(shell mkdir -p $(OBJ_DIR) $(BIN_DIR) $(TEST_OBJ_DIR))
 
-.PHONY: all
-all: $(BIN_DIR)/$(TARGET)
+
+.PHONY: build
+build:
+	@make clean
+	@make simulation
+	@make test
+
+.PHONY: simulation
+simulation: $(BIN_DIR)/$(TARGET)
 
 .PHONY: test
 test: $(BIN_DIR)/$(TEST_TARGET)
 
 .PHONY: coverage
 coverage:
-	@make clean
-	@make
-	@make test
+	./$(BIN_DIR)/$(TEST_TARGET)
 	@for filename in $(SRCS); do \
+		echo "\n"; \
 		obj_file=$(OBJ_DIR)/$${filename%.cpp}.o; \
 		gcov --object-directory=$(OBJ_DIR) $${filename} -n | grep -v ".*simulation.*" | grep -v ".*\.h" | grep -A 1 "src"; \
 		echo "\n"; \
