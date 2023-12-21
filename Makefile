@@ -70,7 +70,7 @@ coverage:
 	echo $$results; \
 	echo "\nTotal Covered Lines: $$covered_lines"; \
 	echo "Total Lines: $$total_lines"; \
-	printf "\nTOTAL COVERAGE: %.2f%%\n" "$$(echo "$$covered_lines * 100 / $$total_lines" | bc)";
+	printf "\nTOTAL COVERAGE: %.0f%%\n" "$$(echo "$$covered_lines * 100 / $$total_lines" | bc)";
 
 
 .PHONY: clean
