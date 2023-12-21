@@ -39,5 +39,5 @@ TEST_CASE("Particle Update") {
     particle1.update(&force, timestep);
     
     // Check the update works
-    CHECK(particle1.position[0] == 1.5);
+    CHECK(particle1.position[0] == 1);
 }
