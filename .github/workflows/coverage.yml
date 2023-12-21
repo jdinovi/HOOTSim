@@ -1,0 +1,35 @@
+name: Code Coverage
+
+# Run it when you push to all branches
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build binary files
+      run: |
+        make build
+
+  coverage:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install gcov
+      run: |
+        if ! command -v gcov &>/dev/null; then
+            echo "gcov is not installed. Installing..."
+            sudo apt-get update
+            sudo apt-get install -y gcov
+        fi
+        echo "gcov is installed."
+
