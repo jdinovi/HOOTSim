@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++11 -Wall
+CXXFLAGS = -std=c++11 -Wall --coverage
 SRC_DIR = src
 INC_DIR = include
 OBJ_DIR = obj
@@ -44,6 +44,17 @@ all: $(BIN_DIR)/$(TARGET)
 
 .PHONY: test
 test: $(BIN_DIR)/$(TEST_TARGET)
+
+.PHONY: coverage
+coverage:
+	@make clean
+	@make
+	@make test
+	@for filename in $(SRCS); do \
+		obj_file=$(OBJ_DIR)/$${filename%.cpp}.o; \
+		gcov --object-directory=$(OBJ_DIR) $${filename} -n | grep -v ".*simulation.*" | grep -v ".*\.h" | grep -A 1 "src"; \
+		echo "\n"; \
+	done
 
 .PHONY: clean
 clean:
