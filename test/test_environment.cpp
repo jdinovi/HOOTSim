@@ -20,7 +20,7 @@ TEST_CASE("Environment Initialization") {
     std::vector<Particle*> particles = {&particle1, &particle2};
     
     // Initialize an environment
-    GravitationalEnvironment env1(particles);
+    GravitationalEnvironment env1(particles, false);
 
     // Assertions
     CHECK(env1.time == 0);
@@ -46,7 +46,7 @@ TEST_CASE("Environment Single Step") {
     std::vector<Particle*> particles = {&particle1, &particle2};
     
     // Initialize an environment
-    GravitationalEnvironment env1(particles);
+    GravitationalEnvironment env1(particles, false);
 
     // Take a step
     env1.step(timestep);
