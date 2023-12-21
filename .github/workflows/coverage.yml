@@ -5,16 +5,36 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
 
+    outputs:
+      coverage_status: ${{ steps.set-coverage-status.outputs.coverage_status }}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
     - name: Evaluate coverage
+      id: set-coverage-status
       run: |
         COVERAGE=$(make coverage | grep 'TOTAL COVERAGE' | grep -Eo '[0-9]+')
 
         if [ "$COVERAGE" -gt 89 ]; then
-            echo "success"
+            echo "Coverage meets the threshold"
+            echo "::set-output name=coverage_status::success"
         else
-            echo "failure"
+            echo "Coverage below the threshold"
+            echo "::set-output name=coverage_status::failure"
         fi
+
+  update-badge:
+    needs: coverage
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set coverage status
+      run: |
+        echo "Coverage status: ${{ needs.coverage.outputs.coverage_status }}" >> $GITHUB_ENV
+
+    - name: Upload coverage status
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage_status
+        path: $GITHUB_ENV
