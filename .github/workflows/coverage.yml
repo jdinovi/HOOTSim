@@ -23,18 +23,15 @@ jobs:
 
       - name: Build
         run: |
-          cd
           make build
 
       - name: Generate coverage report
         run: |
-          cd
-
           # Function to calculate coverage for a file
           calculate_coverage() {
               local file=$1
-              local lines_executed=$(grep "File '$file'" -A 1 | awk '/Lines executed:/ {print $4}')
-              local total_lines=$(grep "File '$file'" -A 1 | awk '/Lines executed:/ {print $NF}')
+              local lines_executed=$(gcov --object-directory=obj $file -n | awk '/Lines executed:/ {print $4}')
+              local total_lines=$(gcov --object-directory=obj $file -n | awk '/Lines executed:/ {print $NF}')
               local coverage=$(echo "scale=2; $lines_executed / $total_lines * 100" | bc)
               echo $coverage
           }
