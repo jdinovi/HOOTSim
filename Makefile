@@ -55,13 +55,23 @@ test: $(BIN_DIR)/$(TEST_TARGET)
 .PHONY: coverage
 coverage:
 	./$(BIN_DIR)/$(TEST_TARGET)
-	@results=""
-	@for filename in $(SRCS); do \
+	@results=""; \
+	total_lines=0; \
+	covered_lines=0; \
+	for filename in $(filter-out $(SRC_DIR)/simulation.cpp, $(SRCS)); do \
 		obj_file=$(OBJ_DIR)/$${filename%.cpp}.o; \
 		result=$$(gcov --object-directory=$(OBJ_DIR) $${filename} -n | grep -v ".*simulation.*" | grep -v ".*\.h" | grep -A 1 "src"); \
-		results="$${results}\n\n$$result"; \
+		results+="\n\n$$result"; \
+		lines=$$(echo $$result | grep -Eo "[0-9]+$$"); \
+		line_pct=$$(echo $$result | grep -Eo '([0-9]+\.[0-9]+)\%' | sed 's/\%//'); \
+		total_lines=$$((total_lines + lines)); \
+		covered_lines=$$(echo "$$(echo "$$covered_lines + $$line_pct * $$lines / 100" | bc)" | bc); \
 	done; \
-	echo "$$results"
+	echo $$results; \
+	echo "\nTotal Covered Lines: $$covered_lines"; \
+	echo "Total Lines: $$total_lines"; \
+	printf "\nTOTAL COVERAGE: %.2f%%\n" "$$(echo "$$covered_lines * 100 / $$total_lines" | bc)";
+
 
 .PHONY: clean
 clean:
