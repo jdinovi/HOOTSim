@@ -55,12 +55,13 @@ test: $(BIN_DIR)/$(TEST_TARGET)
 .PHONY: coverage
 coverage:
 	./$(BIN_DIR)/$(TEST_TARGET)
+	@results=""
 	@for filename in $(SRCS); do \
-		echo "\n"; \
 		obj_file=$(OBJ_DIR)/$${filename%.cpp}.o; \
-		gcov --object-directory=$(OBJ_DIR) $${filename} -n | grep -v ".*simulation.*" | grep -v ".*\.h" | grep -A 1 "src"; \
-		echo "\n"; \
-	done
+		result=$$(gcov --object-directory=$(OBJ_DIR) $${filename} -n | grep -v ".*simulation.*" | grep -v ".*\.h" | grep -A 1 "src"); \
+		results="$${results}\n\n$$result"; \
+	done; \
+	echo "$$results"
 
 .PHONY: clean
 clean:
