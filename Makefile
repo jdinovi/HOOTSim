@@ -39,22 +39,22 @@ $(TEST_OBJ_DIR)/%.o: $(TEST_DIR)/%.cpp
 # Ensure directories exist
 $(shell mkdir -p $(OBJ_DIR) $(BIN_DIR) $(TEST_OBJ_DIR))
 
-
 .PHONY: build
 build:
 	@make clean
 	@make simulation
-	@make test
 
 .PHONY: simulation
 simulation: $(BIN_DIR)/$(TARGET)
 
 .PHONY: test
 test: $(BIN_DIR)/$(TEST_TARGET)
+	./$(BIN_DIR)/$(TEST_TARGET)
 
 .PHONY: coverage
 coverage:
-	./$(BIN_DIR)/$(TEST_TARGET)
+	@make build
+	@make test
 	@results=""; \
 	total_lines=0; \
 	covered_lines=0; \

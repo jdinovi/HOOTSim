@@ -1,41 +1,16 @@
-name: Code Coverage
-
-# Run it when you push to all branches
-on:
-  push:
+name: coverage
+on: [push, pull_request]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Build binary files
-      run: |
-        make build
-
   coverage:
-    needs: build
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Install gcov
+    - name: Evaluate coverage
       run: |
-        if ! command -v gcov &>/dev/null; then
-            echo "gcov is not installed. Installing..."
-            sudo apt-get update
-            sudo apt-get install -y gcov
-        fi
-        echo "gcov is installed."
-
-    - name: Generate Coverage
-      run: |
-        make build
         COVERAGE=$(make coverage | grep 'TOTAL COVERAGE' | grep -Eo '[0-9]+')
 
         if [ "$COVERAGE" -gt 89 ]; then
@@ -43,4 +18,3 @@ jobs:
         else
             echo "failure"
         fi
-
