@@ -6,12 +6,16 @@
 #include <filesystem>
 
 #include "../include/environment.h"
+#include "../include/body.h"
+#include "../include/particle.h"
+
+
 namespace fs = std::filesystem;
 double G = 6.6743e-11;
 
 
 // Get the largest number from a vector of filenames
-int getLargestLabelNumber(const std::vector<std::string>& filenames) {
+inline int getLargestLabelNumber(const std::vector<std::string>& filenames) {
     int maxNumber = -1;
 
     for (const std::string& filename : filenames) {
@@ -38,10 +42,9 @@ int getLargestLabelNumber(const std::vector<std::string>& filenames) {
     return maxNumber + 1;
 }
 
-
-// Constructor definition
-GravitationalEnvironment::GravitationalEnvironment(const std::vector<Particle*>& particlePtrs, const bool log)
-    : particlePtrs(particlePtrs), log(log), time(0) {
+template <typename T>
+GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<T*>& particlePtrs, const bool log)
+    : particlePtrs(particlePtrs), log(log), time(0), n_particles(particlePtrs.size()){
 
         // Create a log file if we want one
         if (log == true) {
@@ -63,8 +66,9 @@ GravitationalEnvironment::GravitationalEnvironment(const std::vector<Particle*>&
     }
 
 
+template <typename T>
 // Get the forces in the environment
-std::vector<std::array<double, 3>> GravitationalEnvironment::getForces(const double timestep) {
+std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForces(const double timestep) {
     // A vector to hold the forces on each particle
     std::vector<std::array<double, 3>> forces(n_particles);
 
@@ -91,17 +95,17 @@ std::vector<std::array<double, 3>> GravitationalEnvironment::getForces(const dou
     return forces;
 }
 
-
+template <typename T>
 // Update each particle in the environment
-void GravitationalEnvironment::updateAll(const std::vector<std::array<double, 3>>* forces, const double timestep) {
+void GravitationalEnvironment<T>::updateAll(const std::vector<std::array<double, 3>>* forces, const double timestep) {
     for (int i = 0; i < n_particles; i++){
         particlePtrs[i]->update(&((*forces)[i]), timestep);
     }
 }
 
-
+template <typename T>
 // Take a step
-void GravitationalEnvironment::step(const double timestep) {
+void GravitationalEnvironment<T>::step(const double timestep) {
 
     // Get the forces and upate everything
     std::vector<std::array<double, 3>> forces = getForces(timestep);
@@ -111,9 +115,9 @@ void GravitationalEnvironment::step(const double timestep) {
     time += timestep;
 }
 
-
+template <typename T>
 // Get log file header
-std::string GravitationalEnvironment::getLogHeader() {
+std::string GravitationalEnvironment<T>::getLogHeader() {
     std::string header = "Time,";
 
     // Add header entries for each particle
@@ -134,9 +138,9 @@ std::string GravitationalEnvironment::getLogHeader() {
     return header;
 }
 
-
+template <typename T>
 // Get the row of the logging csv
-std::string GravitationalEnvironment::getStepLog() {
+std::string GravitationalEnvironment<T>::getStepLog() {
     
     // Iterate through the particles and append the data to the logging string
     std::string logLine = "";
@@ -155,9 +159,9 @@ std::string GravitationalEnvironment::getStepLog() {
     return logLine;
 }
 
-
+template <typename T>
 // Run a simulation
-void GravitationalEnvironment::simulate(const double duration, const double timestep) {
+void GravitationalEnvironment<T>::simulate(const double duration, const double timestep) {
     std::string logStr = getLogHeader();
     std::cout << getLogHeader() + "\n";
 
@@ -195,10 +199,14 @@ void GravitationalEnvironment::simulate(const double duration, const double time
     }
 }
 
-
+template <typename T>
 // Reset the environment
-void GravitationalEnvironment::reset() {
+void GravitationalEnvironment<T>::reset() {
 
     time = 0;
 
 }
+
+// Define the classes based on Particle or Body
+template class GravitationalEnvironment<Particle>;
+template class GravitationalEnvironment<Body>;

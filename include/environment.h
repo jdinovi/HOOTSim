@@ -1,14 +1,15 @@
 #include <iostream>
 #include <vector>
 #include <array>
+
 #include "./particle.h"
 
-
+template<typename T>
 class GravitationalEnvironment{
     
     public:
         // Constructors
-        GravitationalEnvironment(const std::vector<Particle*>& particlePtrs, const bool log);
+        GravitationalEnvironment(const std::vector<T*>& particlePtrs, const bool log);
 
         // Define member functions
         std::vector<std::array<double, 3>> getForces(const double timestep);
@@ -20,9 +21,9 @@ class GravitationalEnvironment{
         void reset();
 
         // Instantiation of the physical members
-        std::vector<Particle*> particlePtrs;
+        std::vector<T*> particlePtrs;
         bool log;
         double time;
-        int n_particles = particlePtrs.size();
+        int n_particles;
         std::string logFileName;
 };
