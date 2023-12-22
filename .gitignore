@@ -35,3 +35,6 @@
 bin
 obj
 obj_test
+
+# Don't add data files
+data/*.csv

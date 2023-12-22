@@ -15,9 +15,9 @@ TEST_CASE("Environment Initialization") {
     std::array<double, 3> initial_velocity2 = {0, 0, 0};
 
     // Define the particles
-    Particle particle1(&initial_position1, &initial_velocity1, mass);
-    Particle particle2(&initial_position2, &initial_velocity2, mass);
-    std::vector<Particle*> particles = {&particle1, &particle2};
+    auto particle1Ptr = std::make_shared<Particle>(&initial_position1, &initial_velocity1, mass);
+    auto particle2Ptr = std::make_shared<Particle>(&initial_position2, &initial_velocity2, mass);
+    std::vector<std::shared_ptr<Particle>> particles = {particle1Ptr, particle2Ptr};
     
     // Initialize an environment
     GravitationalEnvironment env1(particles, false);
@@ -41,9 +41,9 @@ TEST_CASE("Environment Single Step") {
     std::array<double, 3> initial_velocity2 = {0, 0, 0};
 
     // Define the particles
-    Particle particle1(&initial_position1, &initial_velocity1, mass);
-    Particle particle2(&initial_position2, &initial_velocity2, mass);
-    std::vector<Particle*> particles = {&particle1, &particle2};
+    auto particle1Ptr = std::make_shared<Particle>(&initial_position1, &initial_velocity1, mass);
+    auto particle2Ptr = std::make_shared<Particle>(&initial_position2, &initial_velocity2, mass);
+    std::vector<std::shared_ptr<Particle>> particles = {particle1Ptr, particle2Ptr};
     
     // Initialize an environment
     GravitationalEnvironment env1(particles, false);
@@ -52,11 +52,12 @@ TEST_CASE("Environment Single Step") {
     env1.step(timestep);
 
     // Assertions
-    CHECK(std::abs(particle1.position[0] - 0.0208572) < 0.0001);
+    CHECK(std::abs(particle1Ptr->position[0] - 0.0208572) < 0.0001);
     CHECK(env1.time == 1);
 
 }
 
+TEST_CASE("getLargestLabelNumber") {
 
-
-
+    // Vector of fake filenames to 
+}

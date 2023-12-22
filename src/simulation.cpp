@@ -11,7 +11,7 @@ int main() {
     float timestep = 0.5;
 
     // Initialize particle specs
-    double mass = 1E10;
+    double mass = 1E9;
     std::array<double, 3> initial_position1 = {0, 0, 0};
     std::array<double, 3> initial_position2 = {4, 0, 0};
     std::array<double, 3> initial_velocity1 = {0, 0, 0};
@@ -19,9 +19,9 @@ int main() {
 
     
     // Define the particles
-    Particle particle1(&initial_position1, &initial_velocity1, mass);
-    Particle particle2(&initial_position2, &initial_velocity2, mass);
-    std::vector<Particle*> particles = {&particle1, &particle2};
+    auto particle1Ptr = std::make_shared<Particle>(&initial_position1, &initial_velocity1, mass);
+    auto particle2Ptr = std::make_shared<Particle>(&initial_position2, &initial_velocity2, mass);
+    std::vector<std::shared_ptr<Particle>> particles = {particle1Ptr, particle2Ptr};
     
     // Initialize an environment
     GravitationalEnvironment env1(particles, true);
