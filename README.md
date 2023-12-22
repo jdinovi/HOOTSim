@@ -8,9 +8,7 @@ N-Body Simulator
 *  `./bin/HOOTSim`
 
 ## Run Test Suite:
-* `make build`
-* `./bin/test_HOOTSim`
+* `make test`
 
 ## Run Code Coverages:
-* `make build`
 * `make coverage`
