@@ -6,7 +6,7 @@
 #include <filesystem>
 
 #include "../include/environment.h"
-namespace fs = std::__fs::filesystem;
+namespace fs = std::filesystem;
 double G = 6.6743e-11;
 
 
