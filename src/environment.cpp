@@ -163,8 +163,7 @@ std::string GravitationalEnvironment::getLogHeader() const {
             header += "vz" + std::to_string(i) + ",";
         }
     }
-
-    return header;
+    return header + "\n";
 }
 
 
