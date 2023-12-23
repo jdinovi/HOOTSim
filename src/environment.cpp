@@ -35,7 +35,7 @@ int getLargestLabelNumber(const std::vector<std::string>& filenames, const std::
         }
     }
 
-    return maxNumber + 1;
+    return maxNumber;
 }
 
 
@@ -61,7 +61,7 @@ GravitationalEnvironment::GravitationalEnvironment(const std::vector<std::shared
 
             // Get the largest log file number and create new log file
             int lastLogNum = getLargestLabelNumber(lastLogFileNames, "run");
-            logFileName = dataPath + "/run" + std::to_string(lastLogNum) + ".csv";
+            logFileName = dataPath + "/run" + std::to_string(lastLogNum + 1) + ".csv";
         }
     }
 GravitationalEnvironment::GravitationalEnvironment(const std::vector<std::shared_ptr<Particle>>& particlePtrs, const bool log, std::string logFilePrefix = "run")
@@ -85,13 +85,14 @@ GravitationalEnvironment::GravitationalEnvironment(const std::vector<std::shared
 
             // Get the largest log file number and create new log file
             int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
-            logFileName = dataPath + "/run" + std::to_string(lastLogNum) + ".csv";
+            logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
         }
     }
 
 
 // Get the forces in the environment
 std::vector<std::array<double, 3>> GravitationalEnvironment::getForces(const double timestep) {
+
     // A vector to hold the forces on each particle
     std::vector<std::array<double, 3>> forces(nParticles);
 
@@ -105,8 +106,13 @@ std::vector<std::array<double, 3>> GravitationalEnvironment::getForces(const dou
             prop_to_force = G * particlePtrs[i]->mass * particlePtrs[j]->mass;
 
             for (int k = 0; k < 3; k++) {
+
                 // r-dependence
-                r_dep = (particlePtrs[i]->position[k] - particlePtrs[j]->position[k]) / pow(particlePtrs[i]->position[k] - particlePtrs[j]->position[k], 3);
+                if (particlePtrs[i]->position[k] == particlePtrs[j]->position[k]){
+                    r_dep = 0;
+                } else {
+                    r_dep = (particlePtrs[i]->position[k] - particlePtrs[j]->position[k]) / pow(particlePtrs[i]->position[k] - particlePtrs[j]->position[k], 3);
+                }
 
                 // Update forces (opposite and equal)
                 forces[i][k] = prop_to_force * r_dep;
@@ -225,7 +231,5 @@ void GravitationalEnvironment::simulate(const double duration, const double time
 
 // Reset the environment
 void GravitationalEnvironment::reset() {
-
     time = 0;
-
 }

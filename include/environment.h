@@ -26,4 +26,8 @@ public:
     double time;
     int nParticles; // This should be calculated in the constructor.
     std::string logFileName;
+
 };
+
+// Helper functions
+int getLargestLabelNumber(const std::vector<std::string>& filenames, const std::string logFilePrefix);
