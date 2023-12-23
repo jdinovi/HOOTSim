@@ -1,6 +1,7 @@
 #include <iostream>
 #include <array>
 #include <vector>
+#include <memory>
 
 #include "../include/particle.h"
 #include "../include/body.h"
