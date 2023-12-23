@@ -153,7 +153,7 @@ TEST_CASE("Environment simulate") {
 
     // Check if the error message is as expected
     std::string output = buffer.str();
-    assert(output.find("Failed to open the file:") != std::string::npos);
+    CHECK(output.find("Failed to open the file:") != std::string::npos);
 }
 
 TEST_CASE("Reset Environment") {
