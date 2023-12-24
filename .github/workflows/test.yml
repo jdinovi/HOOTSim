@@ -5,6 +5,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      HOOTSIM_PATH: \.
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3

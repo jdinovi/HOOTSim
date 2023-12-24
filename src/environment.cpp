@@ -52,7 +52,7 @@ GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::sha
             // Get a vector of the filenames in the data directory
             std::vector<std::string> lastLogFileNames;
             const char* repoPath = std::getenv("HOOTSIM_PATH");
-            std::string dataPath = (repoPath == nullptr) ? "./data" : (std::string(repoPath) + "/data");
+            std::string dataPath = std::string(repoPath) + "/data";
             if (!fs::exists(dataPath)) {
                 fs::create_directory(dataPath);
                 std::cout << "data directory created successfully.\n";
