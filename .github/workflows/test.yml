@@ -11,4 +11,7 @@ jobs:
 
     - name: Run tests
       run: |
-        make test
+        result=$(make test)
+        echo "$result"
+        echo "::set-output name=test-result::$result"
+  
