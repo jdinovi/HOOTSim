@@ -6,16 +6,20 @@
 #include <filesystem>
 
 #include "../include/environment.h"
+#include "../include/body.h"
+#include "../include/particle.h"
+
+
 namespace fs = std::filesystem;
 double G = 6.6743e-11;
 
 
 // Get the largest number from a vector of filenames
-int getLargestLabelNumber(const std::vector<std::string>& filenames) {
+inline int getLargestLabelNumber(const std::vector<std::string>& filenames, const std::string logFilePrefix = "run") {
     int maxNumber = -1;
 
     for (const std::string& filename : filenames) {
-        size_t pos = filename.find("run");
+        size_t pos = filename.find(logFilePrefix);
         if (pos != std::string::npos) {
             // Assuming "run" is followed immediately by the number and then ".csv"
             size_t start = pos + 3; // Start of the number (after "run")
@@ -35,13 +39,12 @@ int getLargestLabelNumber(const std::vector<std::string>& filenames) {
         }
     }
 
-    return maxNumber + 1;
+    return maxNumber;
 }
 
-
-// Constructor definition
-GravitationalEnvironment::GravitationalEnvironment(const std::vector<Particle*>& particlePtrs, const bool log)
-    : particlePtrs(particlePtrs), log(log), time(0) {
+template <typename T>
+GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix)
+    : particlePtrs(particlePtrs), log(log), time(0), nParticles(particlePtrs.size()) {
 
         // Create a log file if we want one
         if (log == true) {
@@ -50,36 +53,48 @@ GravitationalEnvironment::GravitationalEnvironment(const std::vector<Particle*>&
             std::vector<std::string> lastLogFileNames;
             const char* repoPath = std::getenv("HOOTSIM_PATH");
             std::string dataPath = std::string(repoPath) + "/data";
-            for (const auto& entry : fs::directory_iterator(dataPath)) {
-                if (fs::is_regular_file(entry.status())) {
-                    lastLogFileNames.push_back(entry.path().filename().string());
-                }
+            if (!fs::exists(dataPath)) {
+                fs::create_directory(dataPath);
+                std::cout << "data directory created successfully.\n";
+            } else {
+                std::cout << "data directory already exists.\n";
             }
-
-            // Get the largest log file number and create new log file
-            int lastLogNum = getLargestLabelNumber(lastLogFileNames);
-            logFileName = dataPath + "/run" + std::to_string(lastLogNum) + ".csv";
+        for (const auto& entry : fs::directory_iterator(dataPath)) {
+            if (fs::is_regular_file(entry.status())) {
+                lastLogFileNames.push_back(entry.path().filename().string());
+            }
         }
+
+    // Get the largest log file number and create new log file
+    int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
+    logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
     }
+}
 
 
+template <typename T>
 // Get the forces in the environment
-std::vector<std::array<double, 3>> GravitationalEnvironment::getForces(const double timestep) {
+std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForces(const double timestep) {
     // A vector to hold the forces on each particle
-    std::vector<std::array<double, 3>> forces(n_particles);
+    std::vector<std::array<double, 3>> forces(nParticles);
 
     // Iterate through and find each source contribution
     double prop_to_force;  // Gmm
     double r_dep; // rhat // r^2
-    for (int i = 0; i < n_particles; i++) {
-        for (int j = i + 1; j < n_particles; j++) {
+    for (int i = 0; i < nParticles; i++) {
+        for (int j = i + 1; j < nParticles; j++) {
 
             // Only calculate Gmm
             prop_to_force = G * particlePtrs[i]->mass * particlePtrs[j]->mass;
 
             for (int k = 0; k < 3; k++) {
+
                 // r-dependence
-                r_dep = (particlePtrs[i]->position[k] - particlePtrs[j]->position[k]) / pow(particlePtrs[i]->position[k] - particlePtrs[j]->position[k], 3);
+                if (particlePtrs[i]->position[k] == particlePtrs[j]->position[k]){
+                    r_dep = 0;
+                } else {
+                    r_dep = (particlePtrs[i]->position[k] - particlePtrs[j]->position[k]) / pow(particlePtrs[i]->position[k] - particlePtrs[j]->position[k], 3);
+                }
 
                 // Update forces (opposite and equal)
                 forces[i][k] = prop_to_force * r_dep;
@@ -91,52 +106,51 @@ std::vector<std::array<double, 3>> GravitationalEnvironment::getForces(const dou
     return forces;
 }
 
-
+template <typename T>
 // Update each particle in the environment
-void GravitationalEnvironment::updateAll(const std::vector<std::array<double, 3>>* forces, const double timestep) {
-    for (int i = 0; i < n_particles; i++){
-        particlePtrs[i]->update(&((*forces)[i]), timestep);
+void GravitationalEnvironment<T>::updateAll(const std::vector<std::array<double, 3>>& forces, const double timestep) {
+    for (int i = 0; i < nParticles; i++){
+        particlePtrs[i]->update(&(forces[i]), timestep);
     }
 }
 
-
+template <typename T>
 // Take a step
-void GravitationalEnvironment::step(const double timestep) {
+void GravitationalEnvironment<T>::step(const double timestep) {
 
     // Get the forces and upate everything
     std::vector<std::array<double, 3>> forces = getForces(timestep);
-    updateAll(&forces, timestep);
+    updateAll(forces, timestep);
 
     // Update time
     time += timestep;
 }
 
-
 // Get log file header
-std::string GravitationalEnvironment::getLogHeader() {
+template <typename T>
+std::string GravitationalEnvironment<T>::getLogHeader() const {
     std::string header = "Time,";
 
     // Add header entries for each particle
-    for (int i=0; i < n_particles; i++) {
+    for (int i=0; i < nParticles; i++) {
         header += "mass" + std::to_string(i) + ",";
         header += "x" + std::to_string(i) + ",";
         header += "y" + std::to_string(i) + ",";
         header += "z" + std::to_string(i) + ",";
         header += "vx" + std::to_string(i) + ",";
         header += "vy" + std::to_string(i) + ",";
-        if (i == n_particles - 1){
+        if (i == nParticles - 1){
             header += "vz" + std::to_string(i);
         } else {
             header += "vz" + std::to_string(i) + ",";
         }
     }
-
-    return header;
+    return header + "\n";
 }
 
-
+template <typename T>
 // Get the row of the logging csv
-std::string GravitationalEnvironment::getStepLog() {
+std::string GravitationalEnvironment<T>::getStepLog() const {
     
     // Iterate through the particles and append the data to the logging string
     std::string logLine = "";
@@ -155,9 +169,9 @@ std::string GravitationalEnvironment::getStepLog() {
     return logLine;
 }
 
-
+template <typename T>
 // Run a simulation
-void GravitationalEnvironment::simulate(const double duration, const double timestep) {
+void GravitationalEnvironment<T>::simulate(const double duration, const double timestep) {
     std::string logStr = getLogHeader();
     std::cout << getLogHeader() + "\n";
 
@@ -195,10 +209,13 @@ void GravitationalEnvironment::simulate(const double duration, const double time
     }
 }
 
-
+template <typename T>
 // Reset the environment
-void GravitationalEnvironment::reset() {
+void GravitationalEnvironment<T>::reset() {
 
     time = 0;
-
 }
+
+// Define classes for both 'Particle' and 'Body'
+template class GravitationalEnvironment<Particle>;
+template class GravitationalEnvironment<Body>;
