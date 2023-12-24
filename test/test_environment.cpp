@@ -14,7 +14,7 @@ double _G = 6.6743e-11;
 
 // Data path
 const char* repoPath = std::getenv("HOOTSIM_PATH");
-std::string dataPath = std::string(repoPath) + "/data";
+std::string dataPath = (repoPath == nullptr) ? "./data" : (std::string(repoPath) + "/data");
 
 // Initialize particle specs
 double mass = 1E10;
