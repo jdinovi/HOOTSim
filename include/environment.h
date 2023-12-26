@@ -32,6 +32,3 @@ class GravitationalEnvironment{
 
 // Helper functions
 int getLargestLabelNumber(const std::vector<std::string>& filenames, const std::string logFilePrefix);
-
-
-typedef GravitationalEnvironment<Particle> ParticleEnvironment;
