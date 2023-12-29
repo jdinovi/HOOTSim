@@ -1,6 +1,6 @@
 #include "./../include/octree.h"
 #include <array>
-#include <iostream>
+#include <memory>
 
 template <typename T>
 Octree<T>::Octree(std::array<float, 2>& xCoords, std::array<float, 2>& yCoords, std::array<float, 2>& zCoords)

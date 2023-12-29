@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vector>
+#include <memory>
+
 #include "body.h"
 
 template <typename T>
