@@ -14,7 +14,7 @@ double _G = 6.6743e-11;
 
 // Data path
 const char* repoPath = std::getenv("HOOTSIM_PATH");
-std::string dataPath = std::string(repoPath) + "/data";
+std::string dataPath = repoPath == nullptr ? "./data" : std::string(repoPath )+ "/data";
 
 // Initialize particle specs
 double mass = 1E10;
@@ -28,11 +28,9 @@ auto particle1Ptr = std::make_shared<Particle>(&initial_position1, &initial_velo
 auto particle2Ptr = std::make_shared<Particle>(&initial_position2, &initial_velocity2, mass);
 std::vector<std::shared_ptr<Particle>> particles = {particle1Ptr, particle2Ptr};
 
-// Initialize an environment
-GravitationalEnvironment env1(particles, true);
-GravitationalEnvironment env2(particles, true, "funPrefix");
-
-
+// Initialize a particle environment
+GravitationalEnvironment<Particle> env1(particles, true);
+GravitationalEnvironment<Particle> env2(particles, true, "funPrefix");
 
 
 

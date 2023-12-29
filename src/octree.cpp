@@ -1,9 +1,10 @@
 #include "./../include/octree.h"
 #include <array>
+#include <iostream>
 
 template <typename T>
 Octree<T>::Octree(std::array<float, 2>& xCoords, std::array<float, 2>& yCoords, std::array<float, 2>& zCoords)
-    : xCoords(xCoords), yCoords(yCoords), zCoords(zCoords), totalMass(0) {};
+    : totalMass(0), xCoords(xCoords), yCoords(yCoords), zCoords(zCoords) {};
 
 // Recursively set every child to null in the tree, but preserving the tree
 template <typename T>
@@ -57,17 +58,17 @@ void Octree<T>::insert(std::shared_ptr<T> objPtr) {
     objPtrs.push_back(objPtr);
 
     // Instantiate the center of mass if it doesn't exist; update it otherwise
-    float newTotalMass = totalMass + objPtr->mass;
-    if (totalMass == 0) {
-        centerOfMass = objPtr->position;
+    float newTotalMass = *totalMass + objPtr->mass;
+    if (*totalMass == 0) {
+        std::copy(std::begin(objPtr->position), std::end(objPtr->position), std::begin(centerOfMass));
     } else {
         for (int i = 0; i < 3; i++) {
-            centerOfMass[i] = (((centerOfMass[i] * totalMass)) + ((objPtr->position[i]) * (objPtr->mass))) / (newTotalMass);
+            centerOfMass[i] = (((centerOfMass[i] * (*totalMass))) + ((objPtr->position[i]) * (objPtr->mass))) / (newTotalMass);
         }
     }
 
     // Update the total mass
-    totalMass = newTotalMass;
+    *totalMass = newTotalMass;
 
     // Midpoints of coordinates
     float mX = (xCoords[0] + xCoords[1]) / 2.;
@@ -116,7 +117,7 @@ void Octree<T>::insert(std::shared_ptr<T> objPtr) {
         }
 
         // Instantiate a new octree with the calculated coordinates
-        Octree<T>* newOctreePtr = Octree(&xCoordsNew, &yCoordsNew, &zCoordsNew);
+        Octree<T>* newOctreePtr = new Octree<T>(xCoordsNew, yCoordsNew, zCoordsNew);
 
         // Insert the new octree into the correct child with if statements (both location, and if child exists)
         if (xFlag & yFlag & zFlag) {
@@ -166,7 +167,10 @@ void Octree<T>::insert(std::shared_ptr<T> objPtr) {
 // Build the octree
 template <typename T>
 void Octree<T>::build(std::vector<std::shared_ptr<T>>& objPtrs) {
-    for (int i = 0; i < length(&objPtrs); i++) {
-        this->insert((&objPtrs)[i]);
+    for (int i = 0; i < objPtrs.size(); i++) {
+        this->insert(objPtrs[i]);
     }
 }
+
+template class Octree<Particle>;
+template class Octree<Body>;

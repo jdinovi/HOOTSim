@@ -16,7 +16,7 @@ class Octree {
         void build(std::vector<std::shared_ptr<T>>& objPtrs);
 
         // Members
-        std::vector<Body*> objPtrs;
+        std::vector<std::shared_ptr<T>> objPtrs;
         std::array<float, 3> centerOfMass;
         float* totalMass;
 
