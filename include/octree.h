@@ -13,8 +13,7 @@ class Octree {
         // Member functions
         void clear();
         void insert(std::shared_ptr<T> objPtr);
-        void build();
-        void updateCenterOfMass();
+        void build(std::vector<std::shared_ptr<T>>& objPtrs);
 
         // Members
         std::vector<Body*> objPtrs;
@@ -22,9 +21,9 @@ class Octree {
         float* totalMass;
 
         // Dimensions of the current octant
-        std::array<float, 2>* xCoords;
-        std::array<float, 2>* yCoords;
-        std::array<float, 2>* zCoords;
+        std::array<float, 2> xCoords;
+        std::array<float, 2> yCoords;
+        std::array<float, 2> zCoords;
 
         // Octree children --> 0-7 based on 2D convention in postive z, and then 2D convention in negative z, observing from above        
         Octree<T>* child0;

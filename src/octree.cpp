@@ -10,42 +10,42 @@ template <typename T>
 void Octree<T>::clear() {    
     
     if (child0 != nullptr) {
-        child0.clear();
+        child0->clear();
         child0 = nullptr;
     }
 
     if (child1 != nullptr) {
-        child1.clear();
+        child1->clear();
         child1 = nullptr;
     }
 
     if (child2 != nullptr) {
-        child2.clear();
+        child2->clear();
         child2 = nullptr;
     }
 
     if (child3 != nullptr) {
-        child3.clear();
+        child3->clear();
         child3 = nullptr;
     }
 
     if (child4 != nullptr) {
-        child4.clear();
+        child4->clear();
         child4 = nullptr;
     }
 
     if (child5 != nullptr) {
-        child5.clear();
+        child5->clear();
         child5 = nullptr;
     }
 
     if (child6 != nullptr) {
-        child6.clear();
+        child6->clear();
         child6 = nullptr;
     }
 
     if (child7 != nullptr) {
-        child7.clear();
+        child7->clear();
         child7 = nullptr;
     }
 }
@@ -75,7 +75,7 @@ void Octree<T>::insert(std::shared_ptr<T> objPtr) {
     float mZ = (zCoords[0] + zCoords[1]) / 2.;
 
 
-    // Check for recursive insertion --> if greater than 1 pointer, then need to recursive insert
+    // Check for recursive insertion --> if greater than 1 pointer, then need to recursively insert
     if (objPtrs.size() > 1) {
         
         // Initialize flags for octant location
@@ -115,10 +115,58 @@ void Octree<T>::insert(std::shared_ptr<T> objPtr) {
             zCoordsNew[1] = mZ;
         }
 
-        // TO DO: instantiate a new octree with the calculated coordinates and the correct child
-        
+        // Instantiate a new octree with the calculated coordinates
+        Octree<T>* newOctreePtr = Octree(&xCoordsNew, &yCoordsNew, &zCoordsNew);
 
+        // Insert the new octree into the correct child with if statements (both location, and if child exists)
+        if (xFlag & yFlag & zFlag) {
+            if (child0 == nullptr) {
+                child0 = newOctreePtr;
+            }
+            child0->insert(objPtr);
+        } else if (!xFlag & yFlag & zFlag) {
+            if (child1 == nullptr) {
+                child1 = newOctreePtr;
+            }
+            child1->insert(objPtr);
+        } else if (!xFlag & !yFlag & zFlag) {
+            if (child2 == nullptr) {
+                child2 = newOctreePtr;
+            }
+            child2->insert(objPtr);
+        } else if (xFlag & !yFlag & zFlag) {
+            if (child3 == nullptr) {
+                child3 = newOctreePtr;
+            }
+            child3->insert(objPtr);
+        } else if (xFlag & yFlag & !zFlag) {
+            if (child4 == nullptr) {
+                child4 = newOctreePtr;
+            }
+            child4->insert(objPtr);
+        } else if (!xFlag & yFlag & !zFlag) {
+            if (child5 == nullptr) {
+                child5 = newOctreePtr;
+            }
+            child5->insert(objPtr);
+        } else if (!xFlag & !yFlag & !zFlag) {
+            if (child6 == nullptr) {
+                child6 = newOctreePtr;
+            }
+            child6->insert(objPtr);
+        } else if (xFlag & !yFlag & !zFlag) {
+            if (child7 == nullptr) {
+                child7 = newOctreePtr;
+            }
+            child7->insert(objPtr);
+        }
+    }
+}
 
-
+// Build the octree
+template <typename T>
+void Octree<T>::build(std::vector<std::shared_ptr<T>>& objPtrs) {
+    for (int i = 0; i < length(&objPtrs); i++) {
+        this->insert((&objPtrs)[i]);
     }
 }
