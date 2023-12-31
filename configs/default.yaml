@@ -1,0 +1,29 @@
+global:
+  nParticles: 1000
+mass:
+  dist: constant
+  val: 100000000
+x:
+  dist: uniform
+  min: 0
+  max: 4
+y:
+  dist: uniform
+  min: -2
+  max: 4
+z:
+  dist: uniform
+  min: 1
+  max: 10
+vx:
+  dist: uniform
+  min: 0
+  max: 4
+vy:
+  dist: normal
+  mu: -2
+  sigma: 4
+vz:
+  dist: uniform
+  min: -10
+  max: 10
