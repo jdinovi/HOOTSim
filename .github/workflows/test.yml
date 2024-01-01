@@ -12,6 +12,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Install requirements
+      run: |
+        brew install yaml-cpp
+
     - name: Run tests
       run: |
         result=$(make test)
