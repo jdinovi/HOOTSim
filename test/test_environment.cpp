@@ -184,7 +184,7 @@ TEST_CASE("Load Config File") {
     CHECK(defaultConfig["global"]["nParticles"] == "1000");
 }
 
-void checkDefaultEnv(GravitationalEnvironment& env) {
+void checkDefaultEnv(GravitationalEnvironment<Particle>& env) {
     // Check that it all looks good... that default vals are:
 // mass:
 //   dist: constant
@@ -231,8 +231,8 @@ void checkDefaultEnv(GravitationalEnvironment& env) {
 TEST_CASE("Load Particles From Config") {
 
     // Get a defualt environment class
-    GravitationalEnvironment defaultEnv("default.yaml", true);
-    GravitationalEnvironment defaultEnv2("default.yaml", true, "prefixyprefix");
+    GravitationalEnvironment<Particle> defaultEnv("default.yaml", true);
+    GravitationalEnvironment<Particle> defaultEnv2("default.yaml", true, "prefixyprefix");
     
     // Check 'em
     checkDefaultEnv(defaultEnv);

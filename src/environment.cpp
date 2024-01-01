@@ -121,60 +121,12 @@ GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::sha
             }
 
             // Get the largest log file number and create new log file
-            int lastLogNum = getLargestLabelNumber(lastLogFileNames, "run");
-            logFileName = dataPath + "/run" + std::to_string(lastLogNum + 1) + ".csv";
-        }
-    }
-GravitationalEnvironment::GravitationalEnvironment(const std::vector<std::shared_ptr<Particle>>& particlePtrs, const bool log, std::string logFilePrefix = "run")
-    : particlePtrs(particlePtrs), log(log), time(0) {
-
-        // Declare the number of particles
-        nParticles = particlePtrs.size();
-
-        // Create a log file if we want one
-        if (log == true) {
-            
-            // Get a vector of the filenames in the data directory
-            std::vector<std::string> lastLogFileNames;
-            std::string dataPath = REPOPATH + "/data";
-            for (const auto& entry : fs::directory_iterator(dataPath)) {
-                if (fs::is_regular_file(entry.status())) {
-                    lastLogFileNames.push_back(entry.path().filename().string());
-                }
-            }
-
-            // Get the largest log file number and create new log file
             int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
             logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
         }
     }
-GravitationalEnvironment::GravitationalEnvironment(const std::string configFileName, const bool log)
-    : log(log), time(0) {
-
-        // Get particles
-        loadParticlesFromConfig(configFileName);
-
-        // Declare the number of particles
-        nParticles = particlePtrs.size();
-
-        // Create a log file if we want one
-        if (log == true) {
-
-            // Get a vector of the filenames in the data directory
-            std::vector<std::string> lastLogFileNames;
-            std::string dataPath = REPOPATH + "/data";
-            for (const auto& entry : fs::directory_iterator(dataPath)) {
-                if (fs::is_regular_file(entry.status())) {
-                    lastLogFileNames.push_back(entry.path().filename().string());
-                }
-            }
-
-            // Get the largest log file number and create new log file
-            int lastLogNum = getLargestLabelNumber(lastLogFileNames, "run");
-            logFileName = dataPath + "/run" + std::to_string(lastLogNum + 1) + ".csv";
-        }
-    }
-GravitationalEnvironment::GravitationalEnvironment(const std::string configFileName, const bool log, std::string logFilePrefix = "run")
+template <typename T>
+GravitationalEnvironment<T>::GravitationalEnvironment(const std::string configFileName, const bool log, std::string logFilePrefix)
     : log(log), time(0) {
 
         // Get particles
@@ -203,7 +155,8 @@ GravitationalEnvironment::GravitationalEnvironment(const std::string configFileN
 
 
 // Load a full environment from the configuration file
-void GravitationalEnvironment::loadParticlesFromConfig(const std::string configFileName) {
+template <typename T>
+void GravitationalEnvironment<T>::loadParticlesFromConfig(const std::string configFileName) {
 
     // Get configuration map
     std::map<std::string, std::map<std::string, std::string>> configMap = loadConfig(configFileName);
@@ -253,7 +206,7 @@ void GravitationalEnvironment::loadParticlesFromConfig(const std::string configF
         double mass = envParams.at("mass")[i];
 
         // Create Particle instance with pointers to elements in the positions and velocities vectors
-        particlePtrs.push_back(std::make_shared<Particle>(&positions[i], &velocities[i], mass));
+        particlePtrs.push_back(std::make_shared<T>(&positions[i], &velocities[i], mass));
     }
 }
 
@@ -367,7 +320,7 @@ void GravitationalEnvironment<T>::simulate(const double duration, const double t
 
         // If logging, append to log string
         if (log == true) {
-            logStr += std::to_string(i * timestep) + ",";
+            logStr += std::to_string(i * timestep);
             logStr += getStepLog() + "\n";
         }
         std::cout << i * timestep << ",\t" << getStepLog() << "\n";
@@ -390,7 +343,7 @@ void GravitationalEnvironment<T>::simulate(const double duration, const double t
             std::cerr << "Failed to open the file: " << logFileName << std::endl;
         } else {
             logFile << logStr;
-            std::cout << "Successfully logged to " + logFileName;
+            std::cout << "Successfully logged to " + logFileName + "\n";
         }
         logFile.close();
     }

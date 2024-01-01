@@ -10,10 +10,8 @@ template <typename T>
 class GravitationalEnvironment {
 public:
     // Constructors
-    GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log);
-    GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix);
-    GravitationalEnvironment(const std::string configFileName, const bool log);
-    GravitationalEnvironment(const std::string configFileName, const bool log, std::string logFilePrefix);
+    GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix = "run");
+    GravitationalEnvironment(const std::string configFileName, const bool log, std::string logFilePrefix = "run");
 
     // Define member functions
     void loadParticlesFromConfig(std::string configFileName);
@@ -32,6 +30,9 @@ public:
     int nParticles; // This should be calculated in the constructor.
     std::string logFileName;
 
+private:
+    // Instantiation of the physical members
+    std::string logFilePrefix;
 };
 
 // Helper functions

@@ -8,7 +8,7 @@
 #include "../include/environment.h"
 
 int main() {
-    GravitationalEnvironment defaultEnv("default.yaml", true);
+    GravitationalEnvironment<Body> defaultEnv("default.yaml", true);
 
     // Simulate
     defaultEnv.simulate(3, 0.5);
