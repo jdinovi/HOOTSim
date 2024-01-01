@@ -1,5 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall --coverage
+LDFLAGS = -lyaml-cpp
 SRC_DIR = src
 INC_DIR = include
 OBJ_DIR = obj
@@ -22,7 +23,7 @@ INC_DIRS = -I $(INC_DIR)
 
 # Linking step for src files
 $(BIN_DIR)/$(TARGET): $(OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Compiling step for src files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
@@ -30,7 +31,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 
 # Linking step for test files
 $(BIN_DIR)/$(TEST_TARGET): $(filter-out $(OBJ_DIR)/simulation.o, $(OBJS)) $(TEST_OBJS)
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Compiling step for test files
 $(TEST_OBJ_DIR)/%.o: $(TEST_DIR)/%.cpp

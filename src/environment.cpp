@@ -1,17 +1,72 @@
 #include <iostream>
+#include <string>
 #include <array>
 #include <vector>
+#include <random>
+#include <map>
 #include <math.h>
 #include <fstream>
 #include <filesystem>
+#include <yaml-cpp/yaml.h>
 
 #include "../include/environment.h"
 #include "../include/body.h"
 #include "../include/particle.h"
+#include "../include/statistics.h"
 
 
 namespace fs = std::filesystem;
 double G = 6.6743e-11;
+std::string REPOPATH = std::string(std::getenv("HOOTSIM_PATH"));
+
+
+// Load config file to a hashmap. These files are of the form (key: param, value: the distribution parameters).
+std::map<std::string, std::map<std::string, std::string>> loadConfig(const std::string& fileName) {
+
+    std::map<std::string, std::map<std::string, std::string>> configMap;  // a 2D hashmap of the configuration
+    std::string fullPath = std::string(REPOPATH) + "/configs/" + fileName;  // the full path to the configfile
+
+    try {
+
+        // Get file and parse like a map
+        YAML::Node config = YAML::LoadFile(fullPath);
+        if (config.IsMap()) {
+
+            // Fill in 2D hashmap
+            for (const auto& element : config) {
+                std::string outerKey = element.first.as<std::string>();
+                const YAML::Node& innerNode = element.second;
+
+                if (innerNode.IsMap()) { // If there is a 2nd dim for the specific element
+                    std::map<std::string, std::string> innerMap;
+                    for (const auto& innerElement : innerNode) {
+                        std::string innerKey = innerElement.first.as<std::string>();
+                        std::string innerValue = innerElement.second.as<std::string>();
+                        innerMap[innerKey] = innerValue;
+                    }
+                    configMap[outerKey] = innerMap;
+                }
+            }
+        }
+    } catch (const YAML::BadFile& e) {  // fail to open
+        std::cerr << "Failed to open YAML file: " << fullPath << std::endl;
+        throw;
+    } catch (const YAML::Exception& e) {  // issue parsing
+        std::cerr << "YAML parsing error: " << e.what() << std::endl;
+        throw;
+    }
+
+    // Check if the map contains the key "dist" is assigned for each parameter
+    for (auto const& [property, propertyDist] : configMap) {
+        if (property != "global") {
+            if (propertyDist.find("dist") == propertyDist.end()) {
+                throw std::runtime_error("Key 'dist' not found in configuration for property " + property + ".");
+            }
+        }
+    }
+
+    return configMap;
+}
 
 
 // Get the largest number from a vector of filenames
@@ -52,22 +107,106 @@ GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::sha
             // Get a vector of the filenames in the data directory
             std::vector<std::string> lastLogFileNames;
             const char* repoPath = std::getenv("HOOTSIM_PATH");
-            std::string dataPath = std::string(repoPath) + "/data";
+            std::string dataPath = repoPath == nullptr ? "./data" : std::string(repoPath) + "/data";
             if (!fs::exists(dataPath)) {
                 fs::create_directory(dataPath);
                 std::cout << "data directory created successfully.\n";
             } else {
                 std::cout << "data directory already exists.\n";
             }
-        for (const auto& entry : fs::directory_iterator(dataPath)) {
-            if (fs::is_regular_file(entry.status())) {
-                lastLogFileNames.push_back(entry.path().filename().string());
+            for (const auto& entry : fs::directory_iterator(dataPath)) {
+                if (fs::is_regular_file(entry.status())) {
+                    lastLogFileNames.push_back(entry.path().filename().string());
+                }
+            }
+
+            // Get the largest log file number and create new log file
+            int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
+            logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
+        }
+    }
+template <typename T>
+GravitationalEnvironment<T>::GravitationalEnvironment(const std::string configFileName, const bool log, std::string logFilePrefix)
+    : log(log), time(0) {
+
+        // Get particles
+        loadParticlesFromConfig(configFileName);
+
+        // Declare the number of particles
+        nParticles = particlePtrs.size();
+
+        // Create a log file if we want one
+        if (log == true) {
+            
+            // Get a vector of the filenames in the data directory
+            std::vector<std::string> lastLogFileNames;
+            std::string dataPath = REPOPATH + "/data";
+            for (const auto& entry : fs::directory_iterator(dataPath)) {
+                if (fs::is_regular_file(entry.status())) {
+                    lastLogFileNames.push_back(entry.path().filename().string());
+                }
+            }
+
+            // Get the largest log file number and create new log file
+            int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
+            logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
+        }
+    }
+
+
+// Load a full environment from the configuration file
+template <typename T>
+void GravitationalEnvironment<T>::loadParticlesFromConfig(const std::string configFileName) {
+
+    // Get configuration map
+    std::map<std::string, std::map<std::string, std::string>> configMap = loadConfig(configFileName);
+
+    // Grab the gloabl config params for the environment
+    std::map<std::string, std::string> globalConfigMap = configMap.at("global");
+    int nParticles = std::stoi(globalConfigMap.at("nParticles"));
+
+    // Generate distributions for each param
+    std::map<std::string, std::vector<double>> envParams;
+
+    // Iterate through the configuration and sample particles according to config prescirption
+    for (auto const& [property, propertyDist] : configMap) {
+
+        if (property != "global") { // not the global configuarion field
+
+            // The type of distribution for the property
+            std::string distType = propertyDist.at("dist");
+
+            // Sample from the distribution for the property
+            if (distType == "constant") { // Constant dist
+                envParams[property] = std::vector<double> (nParticles, std::stod(propertyDist.at("val")));
+            } else if (distType == "normal") { // Normal dist
+                double mu = std::stod(propertyDist.at("mu"));
+                double sigma = std::stod(propertyDist.at("sigma"));
+                std::normal_distribution<> normalDist(mu, sigma);
+                envParams[property] = sampleFromDistribution(nParticles, normalDist);
+            }  else if (distType == "uniform") { // Uniform dist
+                double min = std::stod(propertyDist.at("min"));
+                double max = std::stod(propertyDist.at("max"));
+                std::uniform_real_distribution<> uniformDist(min, max);
+                envParams[property] = sampleFromDistribution(nParticles, uniformDist);
+            } else {
+                throw std::invalid_argument("Property " + property + " has an invalid distribution.");
             }
         }
+    }
 
-    // Get the largest log file number and create new log file
-    int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
-    logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
+    // Declare particle pointer vector
+    std::vector<std::array<double, 3>> positions(nParticles);
+    std::vector<std::array<double, 3>> velocities(nParticles);
+    for (int i = 0; i < nParticles; i++) {
+
+        // Populate positions and velocities
+        positions[i] = {envParams.at("x")[i], envParams.at("y")[i], envParams.at("z")[i]};
+        velocities[i] = {envParams.at("vx")[i], envParams.at("vy")[i], envParams.at("vz")[i]};
+        double mass = envParams.at("mass")[i];
+
+        // Create Particle instance with pointers to elements in the positions and velocities vectors
+        particlePtrs.push_back(std::make_shared<T>(&positions[i], &velocities[i], mass));
     }
 }
 
@@ -181,7 +320,7 @@ void GravitationalEnvironment<T>::simulate(const double duration, const double t
 
         // If logging, append to log string
         if (log == true) {
-            logStr += std::to_string(i * timestep) + ",";
+            logStr += std::to_string(i * timestep);
             logStr += getStepLog() + "\n";
         }
         std::cout << i * timestep << ",\t" << getStepLog() << "\n";
@@ -191,6 +330,7 @@ void GravitationalEnvironment<T>::simulate(const double duration, const double t
     }
     // end state
     if (log == true) {
+        logStr += std::to_string(nTimesteps * timestep) + ",";
         logStr += getStepLog() + "\n";
     }
     std::cout << nTimesteps * timestep << ",\t"  << getStepLog() << "\n";
@@ -203,7 +343,7 @@ void GravitationalEnvironment<T>::simulate(const double duration, const double t
             std::cerr << "Failed to open the file: " << logFileName << std::endl;
         } else {
             logFile << logStr;
-            std::cout << "Successfully logged to " + logFileName;
+            std::cout << "Successfully logged to " + logFileName + "\n";
         }
         logFile.close();
     }
@@ -212,7 +352,6 @@ void GravitationalEnvironment<T>::simulate(const double duration, const double t
 template <typename T>
 // Reset the environment
 void GravitationalEnvironment<T>::reset() {
-
     time = 0;
 }
 

@@ -1,5 +1,6 @@
 #include <array>
 #include <vector>
+#include <random>
 #include <sstream>
 #include <iostream>
 
@@ -14,7 +15,8 @@ double _G = 6.6743e-11;
 
 // Data path
 const char* repoPath = std::getenv("HOOTSIM_PATH");
-std::string dataPath = std::string(repoPath) + "/data";
+std::string dataPath = repoPath == nullptr ? "./data" : std::string(repoPath )+ "/data";
+std::string configPath = std::string(repoPath) + "/config";
 
 // Initialize particle specs
 double mass = 1E10;
@@ -28,11 +30,9 @@ auto particle1Ptr = std::make_shared<Particle>(&initial_position1, &initial_velo
 auto particle2Ptr = std::make_shared<Particle>(&initial_position2, &initial_velocity2, mass);
 std::vector<std::shared_ptr<Particle>> particles = {particle1Ptr, particle2Ptr};
 
-// Initialize an environment
-GravitationalEnvironment env1(particles, true);
-GravitationalEnvironment env2(particles, true, "funPrefix");
-
-
+// Initialize a particle environment
+GravitationalEnvironment<Particle> env1(particles, true);
+GravitationalEnvironment<Particle> env2(particles, true, "funPrefix");
 
 
 
@@ -48,6 +48,11 @@ TEST_CASE("Environment Initialization") {
     CHECK(env2.particlePtrs.size() == 2);
     CHECK(env2.nParticles == 2);
     CHECK(env2.logFileName == dataPath + "/funPrefix0.csv");
+}
+
+TEST_CASE("Error Handling for Load Config") {
+    // Test error handling when loading an invalid configuration file
+    CHECK_THROWS(loadConfig("invalid_config.yaml"));
 }
 
 void test_normalCase() {
@@ -161,5 +166,76 @@ TEST_CASE("Reset Environment") {
     // Reset environment
     env1.reset();
 
+    // Check that it resets
     CHECK(env1.time == 0);
+}
+
+
+////////// CONFIG FILE TESTS //////////
+TEST_CASE("Load Config File") {
+
+    // Get the default map
+    std::map<std::string, std::map<std::string, std::string>> defaultConfig = loadConfig("default.yaml");
+    
+    // Check some values
+    CHECK(defaultConfig["vy"]["dist"] == "normal");
+    CHECK(defaultConfig["vy"]["mu"] == "-2");
+    CHECK(defaultConfig["vy"]["sigma"] == "4");
+    CHECK(defaultConfig["global"]["nParticles"] == "1000");
+}
+
+void checkDefaultEnv(GravitationalEnvironment<Particle>& env) {
+    // Check that it all looks good... that default vals are:
+// mass:
+//   dist: constant
+//   val: 100000000
+// x:
+//   dist: uniform
+//   min: 0
+//   max: 4
+// y:
+//   dist: uniform
+//   min: -2
+//   max: 4
+// z:
+//   dist: uniform
+//   min: 1
+//   max: 10
+// vx:
+//   dist: uniform
+//   min: 0
+//   max: 4
+// vy:
+//   dist: uniform
+//   min: -2
+//   max: 4
+// vz:
+//   dist: uniform
+//   min: -10
+//   max: 10
+    bool massCheck = true;
+    bool xCheck = true;
+    bool yCheck = true;
+    bool zCheck = true;
+    for (auto pPtr : env.particlePtrs) {
+        massCheck &= pPtr->mass == 100000000;
+        xCheck &= (pPtr->position[0] <= 4 & pPtr->position[0] >= 0);
+        yCheck &= (pPtr->position[1] <= 4 & pPtr->position[1] >= -2);
+        zCheck &= (pPtr->position[2] <= 10 & pPtr->position[2] >= 1);
+    }
+    CHECK(env.nParticles == 1000);
+    CHECK(xCheck);
+    CHECK(yCheck);
+    CHECK(zCheck);
+}
+TEST_CASE("Load Particles From Config") {
+
+    // Get a defualt environment class
+    GravitationalEnvironment<Particle> defaultEnv("default.yaml", true);
+    GravitationalEnvironment<Particle> defaultEnv2("default.yaml", true, "prefixyprefix");
+    
+    // Check 'em
+    checkDefaultEnv(defaultEnv);
+    checkDefaultEnv(defaultEnv2);
+    CHECK(defaultEnv2.logFileName == dataPath + "/prefixyprefix0.csv");
 }
