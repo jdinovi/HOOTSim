@@ -14,11 +14,12 @@ class Octree {
 
         // Member functions
         void clear();
-        void insert(T* objPtr);
-        void build(std::vector<T*>& objPtrs);
+        void updateCoords(std::array<float, 2>& newXCoords, std::array<float, 2>& newYCoords, std::array<float, 2>& newZCoords);
+        void insert(std::shared_ptr<T> objPtr);
+        void build(std::vector<std::shared_ptr<T>>& objPtrs);
 
         // Members
-        std::vector<T*> objPtrs;
+        std::vector<std::shared_ptr<T>> objPtrs;
         std::array<float, 3> centerOfMass;
         float* totalMass;
         bool internal;

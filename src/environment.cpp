@@ -4,10 +4,12 @@
 #include <math.h>
 #include <fstream>
 #include <filesystem>
+#include <utility>
 
 #include "../include/environment.h"
 #include "../include/body.h"
 #include "../include/particle.h"
+#include "../include/octree.h"
 
 
 namespace fs = std::filesystem;
@@ -42,9 +44,13 @@ inline int getLargestLabelNumber(const std::vector<std::string>& filenames, cons
     return maxNumber;
 }
 
+std::array<float, 2> defaultXCoords = {0, 0};
+std::array<float, 2> defaultYCoords = {0, 0};
+std::array<float, 2> defaultZCoords = {0, 0};
+
 template <typename T>
 GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix)
-    : particlePtrs(particlePtrs), log(log), time(0), nParticles(particlePtrs.size()) {
+    : particlePtrs(particlePtrs), log(log), time(0), nParticles(particlePtrs.size()), envOctree(defaultXCoords, defaultYCoords, defaultZCoords, true) {
 
         // Create a log file if we want one
         if (log == true) {
@@ -105,6 +111,45 @@ std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForces(const 
 
     return forces;
 }
+
+template <typename T>
+std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForcesBarnesHut(const double timestep, const float theta) {
+
+    // Clear the Octree
+    envOctree.clear();
+
+    // Get the extreme coordinate locations
+    std::array<float, 2> extremeXCoords = {0, 0};
+    std::array<float, 2> extremeYCoords = {0, 0};
+    std::array<float, 2> extremeZCoords = {0, 0};
+
+    for (int i = 0; i < nParticles; i++) {
+        // extremeXCoords[0] = std::min(extremeXCoords[0], particlePtrs[i]->position[0]);
+        // extremeXCoords[1] = std::max(extremeXCoords[1], particlePtrs[i]->position[0]);
+        
+        // extremeYCoords[0] = std::min(extremeYCoords[0], particlePtrs[i]->position[1]);
+        // extremeYCoords[1] = std::max(extremeYCoords[1], particlePtrs[i]->position[1]);
+        
+        // extremeZCoords[0] = std::min(extremeZCoords[0], particlePtrs[i]->position[2]);
+        // extremeZCoords[1] = std::max(extremeZCoords[1], particlePtrs[i]->position[2]);
+        continue;
+    }
+
+    // Update the coordiantes of the octree
+    envOctree.updateCoords(extremeXCoords, extremeYCoords, extremeZCoords);
+
+    // Build the Octree
+    envOctree.build(particlePtrs);
+
+    // Calculate the forces
+    std::vector<std::array<double, 3>> forces(nParticles); // Vector to hold the forces
+    for (int i = 0; i < nParticles; i++) {
+        continue;
+    }
+
+    return forces;
+}
+    
 
 template <typename T>
 // Update each particle in the environment

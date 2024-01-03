@@ -4,6 +4,7 @@
 #include <memory>
 
 #include "./particle.h"
+#include "./octree.h"
 
 template <typename T>
 class GravitationalEnvironment{
@@ -15,6 +16,7 @@ class GravitationalEnvironment{
 
         // Define member functions
         std::vector<std::array<double, 3>> getForces(const double timestep);
+        std::vector<std::array<double, 3>> getForcesBarnesHut(const double timestep, const float theta);
         void updateAll(const std::vector<std::array<double, 3>>& forces, const double timestep);
         void step(const double timestep);
         void simulate(const double duration, const double timestep);
@@ -28,6 +30,7 @@ class GravitationalEnvironment{
         double time;
         int nParticles;
         std::string logFileName;
+        Octree<T> envOctree;
 };
 
 // Helper functions

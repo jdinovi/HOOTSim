@@ -46,6 +46,8 @@ TEST_CASE("Environment Initialization") {
     CHECK(env2.particlePtrs.size() == 2);
     CHECK(env2.nParticles == 2);
     CHECK(env2.logFileName == dataPath + "/funPrefix0.csv");
+    CHECK(env1.envOctree.objPtrs.size() == 0);
+    CHECK(env1.envOctree.internal == true);
 }
 
 void test_normalCase() {

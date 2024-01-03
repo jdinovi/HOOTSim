@@ -10,6 +10,7 @@ Octree<T>::Octree(std::array<float, 2>& xCoords, std::array<float, 2>& yCoords, 
 // Recursively set every child to null in the tree, but preserving the tree
 template <typename T>
 void Octree<T>::clear() {    
+    // Clear the children
     child0.reset();
     child1.reset();
     child2.reset();
@@ -18,10 +19,22 @@ void Octree<T>::clear() {
     child5.reset();
     child6.reset();
     child7.reset();
+
+    // Clear the members
+    objPtrs.clear();
+    *totalMass = 0.0;
 }
 
 template <typename T>
-void Octree<T>::insert(T* objPtr) {
+void Octree<T>::updateCoords(std::array<float, 2>& newXCoords, std::array<float, 2>& newYCoords, std::array<float, 2>& newZCoords) {
+    // Update the coordinates
+    xCoords = newXCoords;
+    yCoords = newYCoords;
+    zCoords = newZCoords;
+}
+
+template <typename T>
+void Octree<T>::insert(std::shared_ptr<T> objPtr) {
 
     // Append objPtr to the vector of objects
     objPtrs.push_back(objPtr);
@@ -147,8 +160,7 @@ void Octree<T>::insert(T* objPtr) {
     } else if ((!internal) & (objPtrs.size() > 1)) {
         // This current node should now be internal
         internal = true;
-        std::cout << objPtrs.size();
-        for (T* currObjPtr : objPtrs) {
+        for (std::shared_ptr<T> currObjPtr : objPtrs) {
 
             // Midpoints of coordinates
             float mX = (xCoords[0] + xCoords[1]) / 2.;
@@ -255,9 +267,9 @@ void Octree<T>::insert(T* objPtr) {
 
 // Build the octree
 template <typename T>
-void Octree<T>::build(std::vector<T*>& objPtrs) {
-    for (int i = 0; i < objPtrs.size(); i++) {
-        this->insert(objPtrs[i]);
+void Octree<T>::build(std::vector<std::shared_ptr<T>>& objPtrs) {
+    for (std::shared_ptr<T> currObjPtr : objPtrs) {
+        this->insert(currObjPtr);
     }
 }
 
