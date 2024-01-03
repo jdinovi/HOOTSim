@@ -10,7 +10,7 @@ class Octree {
     public:
 
         // Octree constructor
-        Octree(std::array<float, 2>& xCoords, std::array<float, 2>& yCoords, std::array<float, 2>& zCoords);
+        Octree(std::array<float, 2>& xCoords, std::array<float, 2>& yCoords, std::array<float, 2>& zCoords, bool internal);
 
         // Member functions
         void clear();
@@ -21,6 +21,7 @@ class Octree {
         std::vector<std::shared_ptr<T>> objPtrs;
         std::array<float, 3> centerOfMass;
         float* totalMass;
+        bool internal;
 
         // Dimensions of the current octant
         std::array<float, 2> xCoords;
