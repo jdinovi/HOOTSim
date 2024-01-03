@@ -5,6 +5,7 @@
 #include <fstream>
 #include <filesystem>
 #include <utility>
+#include <algorithm>
 
 #include "../include/environment.h"
 #include "../include/body.h"
@@ -124,15 +125,14 @@ std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForcesBarnesH
     std::array<float, 2> extremeZCoords = {0, 0};
 
     for (int i = 0; i < nParticles; i++) {
-        // extremeXCoords[0] = std::min(extremeXCoords[0], particlePtrs[i]->position[0]);
-        // extremeXCoords[1] = std::max(extremeXCoords[1], particlePtrs[i]->position[0]);
+        extremeXCoords[0] = std::min(extremeXCoords[0], static_cast<float>(particlePtrs[i]->position[0]));
+        extremeXCoords[1] = std::max(extremeXCoords[1], static_cast<float>(particlePtrs[i]->position[0]));
         
-        // extremeYCoords[0] = std::min(extremeYCoords[0], particlePtrs[i]->position[1]);
-        // extremeYCoords[1] = std::max(extremeYCoords[1], particlePtrs[i]->position[1]);
+        extremeYCoords[0] = std::min(extremeYCoords[0], static_cast<float>(particlePtrs[i]->position[1]));
+        extremeYCoords[1] = std::max(extremeYCoords[1], static_cast<float>(particlePtrs[i]->position[1]));
         
-        // extremeZCoords[0] = std::min(extremeZCoords[0], particlePtrs[i]->position[2]);
-        // extremeZCoords[1] = std::max(extremeZCoords[1], particlePtrs[i]->position[2]);
-        continue;
+        extremeZCoords[0] = std::min(extremeZCoords[0], static_cast<float>(particlePtrs[i]->position[2]));
+        extremeZCoords[1] = std::max(extremeZCoords[1], static_cast<float>(particlePtrs[i]->position[2]));
     }
 
     // Update the coordiantes of the octree
@@ -144,6 +144,7 @@ std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForcesBarnesH
     // Calculate the forces
     std::vector<std::array<double, 3>> forces(nParticles); // Vector to hold the forces
     for (int i = 0; i < nParticles; i++) {
+        // Need to implement walking down the tree
         continue;
     }
 
