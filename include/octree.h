@@ -14,11 +14,11 @@ class Octree {
 
         // Member functions
         void clear();
-        void insert(std::shared_ptr<T> objPtr);
-        void build(std::vector<std::shared_ptr<T>>& objPtrs);
+        void insert(T* objPtr);
+        void build(std::vector<T*>& objPtrs);
 
         // Members
-        std::vector<std::shared_ptr<T>> objPtrs;
+        std::vector<T*> objPtrs;
         std::array<float, 3> centerOfMass;
         float* totalMass;
         bool internal;
@@ -29,13 +29,14 @@ class Octree {
         std::array<float, 2> zCoords;
 
         // Octree children --> 0-7 based on 2D convention in postive z, and then 2D convention in negative z, observing from above        
-        Octree<T>* child0;
-        Octree<T>* child1;
-        Octree<T>* child2;
-        Octree<T>* child3;
-        Octree<T>* child4;
-        Octree<T>* child5;
-        Octree<T>* child6;
-        Octree<T>* child7;
+        std::unique_ptr<Octree<T>> child0;
+        std::unique_ptr<Octree<T>> child1;
+        std::unique_ptr<Octree<T>> child2;
+        std::unique_ptr<Octree<T>> child3;
+        std::unique_ptr<Octree<T>> child4;
+        std::unique_ptr<Octree<T>> child5;
+        std::unique_ptr<Octree<T>> child6;
+        std::unique_ptr<Octree<T>> child7;
+
 
 };

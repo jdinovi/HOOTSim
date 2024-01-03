@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall --coverage
+CXXFLAGS = -g -std=c++17 -Wall --coverage
 SRC_DIR = src
 INC_DIR = include
 OBJ_DIR = obj
