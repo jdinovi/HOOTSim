@@ -163,3 +163,39 @@ TEST_CASE("Reset Environment") {
 
     CHECK(env1.time == 0);
 }
+
+TEST_CASE("Barnes-Hut Algorithm Force Calculation") {
+
+    float bodyMass = 1;
+    std::array<float, 3> body_pos1 = {9, 9, 9};
+    std::array<float, 3> body_pos2 = {-9, -9, -9};
+    std::array<float, 3> body_pos3 = {-7, -7, -7};
+    std::array<float, 3> body_velo1 = {0, 0, 0};
+    std::array<float, 3> body_velo2 = {0, 0, 0};
+    std::array<float, 3> body_velo3 = {0, 0, 0};
+
+    // Define the particles
+    auto body1Ptr = std::make_shared<Body>(&body_pos1, &body_velo1, bodyMass);
+    auto body2Ptr = std::make_shared<Body>(&body_pos2, &body_velo2, bodyMass);
+    auto body3Ptr = std::make_shared<Body>(&body_pos3, &body_velo3, bodyMass);
+    std::vector<std::shared_ptr<Particle>> bodies = {body1Ptr, body2Ptr, body3Ptr};
+
+    GravitationalEnvironment<Particle> env3(bodies, true, "run", "Barnes-Hut");
+    std::vector<std::__1::array<float, 3UL>> forces = env3.getForces(0.1);
+    
+    // First Body Force
+    CHECK(forces[0][0] - (-1 * _G * 2 / (sqrt(3) * pow(17, 2))) < 1E-7);
+    CHECK(forces[0][1] - (-1 * _G * 2 / (sqrt(3) * pow(17, 2))) < 1E-7);
+    CHECK(forces[0][2] - (-1 * _G * 2 / (sqrt(3) * pow(17, 2))) < 1E-7);
+
+    // Second Body Force
+    CHECK(forces[1][0] - (_G / (sqrt(3) * (pow(243, -0.5) + pow(12, -0.5)))) < 1E-7);
+    CHECK(forces[1][1] - (_G / (sqrt(3) * (pow(243, -0.5) + pow(12, -0.5)))) < 1E-7);
+    CHECK(forces[1][2] - (_G / (sqrt(3) * (pow(243, -0.5) + pow(12, -0.5)))) < 1E-7);
+
+    // Third Body Force
+    CHECK(forces[2][0] - (-1 * _G * -7 / 48.) < 1E-7);
+    CHECK(forces[2][1] - (-1 * _G * -7 / 48.) < 1E-7);
+    CHECK(forces[2][2] - (-1 * _G * -7 / 48.) < 1E-7);
+
+}
