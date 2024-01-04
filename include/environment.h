@@ -12,22 +12,25 @@ class GravitationalEnvironment{
     public:
         // Constructors
         // GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log);
-        GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix="run");
+        GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix="run", std::string forceAlgorithm="pair-wise");
 
-        // Define member functions
-        std::vector<std::array<float, 3>> getForces(const float timestep);
+        // Callable member that we will set to pair-wise or Barnes-Hut force algorithm
+        std::function<std::vector<std::array<float, 3>>(float)> getForces;
+
+        // Define member functions for force algorithms
+        std::vector<std::array<float, 3>> getForcesPairWise(const float timestep);
         std::vector<std::array<float, 3>> getForcesBarnesHut(const float timestep);
-        std::array<float, 3> calculateForceBarnesHut(std::shared_ptr<T> objPtr, std::shared_ptr<Octree<T>> currPtr, std::array<float, 3> netForce, float theta);
         
+        std::array<float, 3> calculateForceBarnesHut(std::shared_ptr<T> objPtr, std::shared_ptr<Octree<T>> currPtr, std::array<float, 3> netForce, float theta);
         void updateAll(const std::vector<std::array<float, 3>>& forces, const float timestep);
         void step(const float timestep);
         void simulate(const float duration, const float timestep);
         std::string getStepLog() const;
         std::string getLogHeader() const;
         void reset();
-
+        
         // Instantiation of the physical members
-        std::vector<std::shared_ptr<T>> particlePtrs; // Changed to std::shared_ptr
+        std::vector<std::shared_ptr<T>> particlePtrs;
         bool log;
         float time;
         int nParticles;

@@ -54,38 +54,44 @@ std::array<float, 2> defaultYCoords = {0, 0};
 std::array<float, 2> defaultZCoords = {0, 0};
 
 template <typename T>
-GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix)
-    : particlePtrs(particlePtrs), log(log), time(0), nParticles(particlePtrs.size()), envOctree(defaultXCoords, defaultYCoords, defaultZCoords, true) {
+GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix, std::string forceAlgorithm)
+    : particlePtrs(particlePtrs), log(log), time(0), nParticles(particlePtrs.size()), envOctree(defaultXCoords, defaultYCoords, defaultZCoords, true) {  
+    // Determine which algorithm to use
+    if (forceAlgorithm == "pair-wise") {
+        getForces = std::bind(&GravitationalEnvironment::getForcesPairWise, this, std::placeholders::_1);
+    } else {
+        getForces = std::bind(&GravitationalEnvironment::getForcesBarnesHut, this, std::placeholders::_1);
+    }
 
-        // Create a log file if we want one
-        if (log == true) {
-            
-            // Get a vector of the filenames in the data directory
-            std::vector<std::string> lastLogFileNames;
-            const char* repoPath = std::getenv("HOOTSIM_PATH");
-            std::string dataPath = repoPath == nullptr ? "./data" : std::string(repoPath) + "/data";
-            if (!fs::exists(dataPath)) {
-                fs::create_directory(dataPath);
-                std::cout << "data directory created successfully.\n";
-            } else {
-                std::cout << "data directory already exists.\n";
-            }
+    // Create a log file if we want one
+    if (log == true) {
+        
+        // Get a vector of the filenames in the data directory
+        std::vector<std::string> lastLogFileNames;
+        const char* repoPath = std::getenv("HOOTSIM_PATH");
+        std::string dataPath = repoPath == nullptr ? "./data" : std::string(repoPath) + "/data";
+        if (!fs::exists(dataPath)) {
+            fs::create_directory(dataPath);
+            std::cout << "data directory created successfully.\n";
+        } else {
+            std::cout << "data directory already exists.\n";
+        }
         for (const auto& entry : fs::directory_iterator(dataPath)) {
             if (fs::is_regular_file(entry.status())) {
                 lastLogFileNames.push_back(entry.path().filename().string());
             }
         }
 
-    // Get the largest log file number and create new log file
-    int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
-    logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
+        // Get the largest log file number and create new log file
+        int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
+        logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
     }
 }
 
 
 template <typename T>
 // Get the forces in the environment
-std::vector<std::array<float, 3>> GravitationalEnvironment<T>::getForces(const float timestep) {
+std::vector<std::array<float, 3>> GravitationalEnvironment<T>::getForcesPairWise(const float timestep) {
     // A vector to hold the forces on each particle
     std::vector<std::array<float, 3>> forces(nParticles);
 
@@ -108,8 +114,8 @@ std::vector<std::array<float, 3>> GravitationalEnvironment<T>::getForces(const f
                 }
 
                 // Update forces (opposite and equal)
-                forces[i][k] = prop_to_force * r_dep;
-                forces[j][k] = -1 * prop_to_force * r_dep;
+                forces[i][k] = -1 * prop_to_force * r_dep;
+                forces[j][k] = prop_to_force * r_dep;
             }
         }
     }
@@ -174,12 +180,17 @@ std::array<float, 3> GravitationalEnvironment<T>::calculateForceBarnesHut(std::s
     } else { // Else, recursive call of calculateForceBarnesHut on all children and add them together to return sum of recursive calls
         std::array<float, 3> totalNetForces;
 
+        std::array<float, 3> child0Force = calculateForceBarnesHut(objPtr, currOctPtr->child0, {0, 0, 0}, theta);
+        std::array<float, 3> child1Force = calculateForceBarnesHut(objPtr, currOctPtr->child1, {0, 0, 0}, theta);
+        std::array<float, 3> child2Force = calculateForceBarnesHut(objPtr, currOctPtr->child2, {0, 0, 0}, theta);
+        std::array<float, 3> child3Force = calculateForceBarnesHut(objPtr, currOctPtr->child3, {0, 0, 0}, theta);
+        std::array<float, 3> child4Force = calculateForceBarnesHut(objPtr, currOctPtr->child4, {0, 0, 0}, theta);
+        std::array<float, 3> child5Force = calculateForceBarnesHut(objPtr, currOctPtr->child5, {0, 0, 0}, theta);
+        std::array<float, 3> child6Force = calculateForceBarnesHut(objPtr, currOctPtr->child6, {0, 0, 0}, theta);
+        std::array<float, 3> child7Force = calculateForceBarnesHut(objPtr, currOctPtr->child7, {0, 0, 0}, theta);
+
         for (int i = 0; i < 3; i++) {
-            totalNetForces[i] = \
-                calculateForceBarnesHut(objPtr, currOctPtr->child0, {0, 0, 0}, theta)[i] + calculateForceBarnesHut(objPtr, currOctPtr->child1, {0, 0, 0}, theta)[i] + \
-                calculateForceBarnesHut(objPtr, currOctPtr->child2, {0, 0, 0}, theta)[i] + calculateForceBarnesHut(objPtr, currOctPtr->child3, {0, 0, 0}, theta)[i] + \
-                calculateForceBarnesHut(objPtr, currOctPtr->child4, {0, 0, 0}, theta)[i] + calculateForceBarnesHut(objPtr, currOctPtr->child5, {0, 0, 0}, theta)[i] + \
-                calculateForceBarnesHut(objPtr, currOctPtr->child6, {0, 0, 0}, theta)[i] + calculateForceBarnesHut(objPtr, currOctPtr->child7, {0, 0, 0}, theta)[i];
+            totalNetForces[i] = child0Force[i] + child1Force[i] + child2Force[i] + child3Force[i] + child4Force[i] + child5Force[i] + child6Force[i] + child7Force[i];
         }
         return totalNetForces;
     }
