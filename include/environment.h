@@ -13,14 +13,26 @@ class GravitationalEnvironment{
     public:
         // Constructors
         // GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log);
-        GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix="run", std::string forceAlgorithm="pair-wise");
+        GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs,
+                                 const bool log,
+                                 std::string logFilePrefix="run",
+                                 std::string forceAlgorithm="pair-wise",
+                                 std::string interactionType="none",
+                                 std::string interactionAlgorithm="pair-wise",
+                                 float COR=1.0);
 
-        // Callable member that we will set to pair-wise or Barnes-Hut force algorithm
-        std::function<std::vector<std::array<float, 3>>(float)> getForces;
+        // Callable members
+        std::function<std::vector<std::array<float, 3>>(float)> getForces;   // Either pair-wise or Barnes-Hut force algorithm
+        std::function<void()> getInteractions;  // Either pair-wise or spatial partition algorithms
+        std::function<void(std::shared_ptr<T> a, std::shared_ptr<T> b, float COR)> interact;  // Either pair-wise or spatial partition algorithms
 
         // Define member functions for force algorithms
         std::vector<std::array<float, 3>> getForcesPairWise(const float timestep);
         std::vector<std::array<float, 3>> getForcesBarnesHut(const float timestep);
+
+        // Define member functions for getting interactions
+        void getInteractionsPairWise();
+        void getInteractionsSpatialPartitioned();
         
         std::array<float, 3> calculateForceBarnesHut(std::shared_ptr<T> objPtr, std::shared_ptr<Octree<T>> currPtr, std::array<float, 3> netForce, float theta);
         void updateAll(const std::vector<std::array<float, 3>>& forces, const float timestep);
@@ -37,6 +49,7 @@ class GravitationalEnvironment{
         int nParticles;
         std::string logFileName;
         Octree<T> envOctree;
+        float COR;
 };
 
 // Helper functions

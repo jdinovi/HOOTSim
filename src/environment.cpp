@@ -5,7 +5,9 @@
 #include <fstream>
 #include <filesystem>
 #include <utility>
+#include <typeinfo>
 #include <algorithm>
+#include <functional>
 
 #include "../include/environment.h"
 #include "../include/body.h"
@@ -49,18 +51,68 @@ float getEuclidianDistance(std::array<float, 3> coords1, std::array<float, 3> co
     return sqrt(pow(coords1[0] - coords2[0], 2) + pow(coords1[1] - coords2[1], 2) + pow(coords1[2] - coords2[2], 2));
 }
 
+// Bounce two bodies given some coefficient of restitution (COR). See math at https://physics.stackexchange.com/questions/681396/elastic-collision-3d-eqaution
+template <typename T>
+void bounce(std::shared_ptr<T> body1Ptr, std::shared_ptr<T> body2Ptr, float COR=1){
+
+    // Get normal vector of collision (from COM of 1 to 2)
+    const std::array<float, 3> n = {body2Ptr->position[0] - body1Ptr->position[0] / abs(body2Ptr->position[0] - body1Ptr->position[0]),
+                                    body2Ptr->position[1] - body1Ptr->position[1] / abs(body2Ptr->position[1] - body1Ptr->position[1]),
+                                    body2Ptr->position[2] - body1Ptr->position[2] / abs(body2Ptr->position[2] - body1Ptr->position[2])};
+
+    // Get reduced mass and impact speed
+    float mEff = 1 / ((1/body1Ptr->mass) + (1/body2Ptr->mass));
+    float vImp = 0;
+    for (int i=0; i<3; i++) {  // Iterate over dot product
+        vImp += n[i] * (body1Ptr->position[i] - body2Ptr->position[i]);
+    }
+    float impulse = (1 + COR) * mEff * vImp;
+
+    // Update velocities
+    for (int i=0; i<3; i++) {  // Iterate over dims
+        body1Ptr->velocity[i] -= impulse / body1Ptr->mass * n[i];
+        body2Ptr->velocity[i] += impulse / body2Ptr->mass * n[i];
+    }
+}
+
+
 std::array<float, 2> defaultXCoords = {0, 0};
 std::array<float, 2> defaultYCoords = {0, 0};
 std::array<float, 2> defaultZCoords = {0, 0};
 
 template <typename T>
-GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix, std::string forceAlgorithm)
-    : particlePtrs(particlePtrs), log(log), time(0), nParticles(particlePtrs.size()), envOctree(defaultXCoords, defaultYCoords, defaultZCoords, true) {  
-    // Determine which algorithm to use
+GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix, std::string forceAlgorithm, std::string interactionType, std::string interactionAlgorithm, float COR)
+    : particlePtrs(particlePtrs), log(log), time(0), nParticles(particlePtrs.size()), envOctree(defaultXCoords, defaultYCoords, defaultZCoords, true), COR(COR) {
+
+    // Determine which gravity algorithm to use
     if (forceAlgorithm == "pair-wise") {
         getForces = std::bind(&GravitationalEnvironment::getForcesPairWise, this, std::placeholders::_1);
     } else {
         getForces = std::bind(&GravitationalEnvironment::getForcesBarnesHut, this, std::placeholders::_1);
+    }
+
+    // Determine which interaction algorithm to use
+    if (interactionType == "none") {
+        getInteractions = [](){ /* Do nothing */ };
+        interact = [](std::shared_ptr<T> a, std::shared_ptr<T> b, float COR){ /* Do nothing */ };
+    } else if (interactionType == "bounce") {
+        
+        // Tell user that we can't bounce particles
+        if (typeid(T) == typeid(Particle)) {
+            throw std::invalid_argument("Particles cannot interact! interactionType must be \"none\" if the simulation uses particles.");
+        }
+
+        // Interaction function
+        interact = &bounce<T>;
+
+        // Determine which collision finding algorithm to use
+        if (interactionAlgorithm == "pair-wise") {
+            getInteractions = std::bind(&GravitationalEnvironment::getInteractionsPairWise, this);
+        } else {
+            getInteractions = std::bind(&GravitationalEnvironment::getInteractionsSpatialPartitioned, this);
+        }
+    } else {  // if we don't even want interactions
+        throw std::invalid_argument("Parameter interactionType must be either \"none\" or \"bounce\"!");
     }
 
     // Create a log file if we want one
@@ -234,7 +286,31 @@ std::vector<std::array<float, 3>> GravitationalEnvironment<T>::getForcesBarnesHu
     }
     return forces;
 }
-    
+
+
+template <typename T>
+// Get the interactions between the particles
+void GravitationalEnvironment<T>::getInteractionsPairWise() {
+
+    // Iterate through and make each particle interact
+    for (int i = 0; i < nParticles; i++) {
+        for (int j = i + 1; j < nParticles; j++) {
+
+            // If body i and j are touching, make them interact
+            float sep = getEuclidianDistance(particlePtrs[i]->position, particlePtrs[j]->position);
+            if (sep < particlePtrs[i]->radius + particlePtrs[j]->radius) {
+                interact(particlePtrs[i], particlePtrs[j], COR);
+            }
+
+        }
+    }
+}
+
+template <typename T>
+// Get the interactions between the particles
+void GravitationalEnvironment<T>::getInteractionsSpatialPartitioned() {
+    // TODO
+}
 
 template <typename T>
 // Update each particle in the environment

@@ -16,4 +16,5 @@ class Particle {
         std::array<float, 3> position;
         std::array<float, 3> velocity;
         float mass;
+        float radius;
 };

@@ -5,7 +5,7 @@
 
 // Constructor definition
 Particle::Particle(const std::array<float, 3>* initial_position, const std::array<float, 3>* initial_velocity, float mass)
-    : position(*initial_position), velocity(*initial_velocity), mass(mass) {};
+    : position(*initial_position), velocity(*initial_velocity), mass(mass), radius(-1) {};
 
 // Update the particle
 void Particle::update(const std::array<float, 3>* force, float timestep) {
