@@ -182,7 +182,7 @@ TEST_CASE("Barnes-Hut Algorithm Force Calculation") {
     std::vector<std::shared_ptr<Particle>> bodies = {body1Ptr, body2Ptr, body3Ptr};
 
     GravitationalEnvironment<Particle> env3(bodies, true, "run", "Barnes-Hut");
-    std::vector<std::__1::array<float, 3UL>> forces = env3.getForces(0.1);
+    std::vector<std::array<float, 3UL>> forces = env3.getForces(0.1);
     
     // First Body Force
     CHECK(forces[0][0] - (-1 * _G * 2 / (sqrt(3) * pow(17, 2))) < 1E-7);
