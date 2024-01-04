@@ -14,7 +14,7 @@
 
 
 namespace fs = std::filesystem;
-double G = 6.6743e-11;
+float G = 6.6743e-11;
 
 
 // Get the largest number from a vector of filenames
@@ -43,6 +43,10 @@ inline int getLargestLabelNumber(const std::vector<std::string>& filenames, cons
     }
 
     return maxNumber;
+}
+
+float getEuclidianDistance(std::array<float, 3> coords1, std::array<float, 3> coords2) {
+    return sqrt(pow(coords1[0] - coords2[0], 2) + pow(coords1[1] - coords2[1], 2) + pow(coords1[2] - coords2[2], 2));
 }
 
 std::array<float, 2> defaultXCoords = {0, 0};
@@ -81,13 +85,13 @@ GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::sha
 
 template <typename T>
 // Get the forces in the environment
-std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForces(const double timestep) {
+std::vector<std::array<float, 3>> GravitationalEnvironment<T>::getForces(const float timestep) {
     // A vector to hold the forces on each particle
-    std::vector<std::array<double, 3>> forces(nParticles);
+    std::vector<std::array<float, 3>> forces(nParticles);
 
     // Iterate through and find each source contribution
-    double prop_to_force;  // Gmm
-    double r_dep; // rhat // r^2
+    float prop_to_force;  // Gmm
+    float r_dep; // rhat // r^2
     for (int i = 0; i < nParticles; i++) {
         for (int j = i + 1; j < nParticles; j++) {
 
@@ -100,7 +104,7 @@ std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForces(const 
                 if (particlePtrs[i]->position[k] == particlePtrs[j]->position[k]){
                     r_dep = 0;
                 } else {
-                    r_dep = (particlePtrs[i]->position[k] - particlePtrs[j]->position[k]) / pow(particlePtrs[i]->position[k] - particlePtrs[j]->position[k], 3);
+                    r_dep = (particlePtrs[i]->position[k] - particlePtrs[j]->position[k]) / abs(pow(particlePtrs[i]->position[k] - particlePtrs[j]->position[k], 3));
                 }
 
                 // Update forces (opposite and equal)
@@ -113,8 +117,76 @@ std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForces(const 
     return forces;
 }
 
+// Calculate the net force on objPtr, using currOctPtr to navigate the tree (i.e. current node in the tree)
 template <typename T>
-std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForcesBarnesHut(const double timestep, const float theta) {
+std::array<float, 3> GravitationalEnvironment<T>::calculateForceBarnesHut(std::shared_ptr<T> objPtr, std::shared_ptr<Octree<T>> currOctPtr, std::array<float, 3> netForce, float theta) {
+    // If current node is a nullptr, return netForce
+    if (currOctPtr == nullptr) {
+        return netForce;
+    }
+    
+    // If current node is an external node and the object node is not the current node, calculate the force
+    if (!(currOctPtr->internal) && (currOctPtr->objPtrs[0] != objPtr)) {
+        // Calculate force of the external node, and add it to net force and return        
+        float prop_to_force = G * objPtr->mass * currOctPtr->objPtrs[0]->mass;
+        float r_dep;
+
+        for (int k = 0; k < 3; k++) {
+            // r-dependence
+            if (objPtr->position[k] == currOctPtr->objPtrs[0]->position[k]){
+                r_dep = 0;
+            } else {
+                r_dep = (currOctPtr->objPtrs[0]->position[k] - objPtr->position[k]) / abs(pow(currOctPtr->objPtrs[0]->position[k] - objPtr->position[k], 3));
+            }
+
+            // Update forces
+            netForce[k] += prop_to_force * r_dep;
+            return netForce;
+        }
+    }
+
+    // Calculate width of region
+    float s = getEuclidianDistance({currOctPtr->xCoords[0], currOctPtr->yCoords[0], currOctPtr->zCoords[0]}, {currOctPtr->xCoords[1], currOctPtr->yCoords[1], currOctPtr->zCoords[1]});
+
+    // Calculate distance between currPtr and objPtr
+    float d = getEuclidianDistance(currOctPtr->centerOfMass, objPtr->position);
+
+    // Calculate s / d
+    float ratio = s / d;
+
+    // If ratio s / d is < theta, treat the node as a single body and calculate force from currPtr on objPtr; return netForce plus recursive call
+    if (ratio < theta) {
+        float prop_to_force = G * objPtr->mass * (*(currOctPtr->totalMass));
+        float r_dep;
+
+        for (int k = 0; k < 3; k++) {
+            // r-dependence
+            if (objPtr->position[k] == currOctPtr->centerOfMass[k]){
+                r_dep = 0;
+            } else {
+                r_dep = (currOctPtr->centerOfMass[k] - objPtr->position[k]) / abs(pow(currOctPtr->centerOfMass[k] - objPtr->position[k], 3));
+            }
+
+            // Update forces
+            netForce[k] += prop_to_force * r_dep;
+        }
+        return netForce;
+    } else { // Else, recursive call of calculateForceBarnesHut on all children and add them together to return sum of recursive calls
+        std::array<float, 3> totalNetForces;
+
+        for (int i = 0; i < 3; i++) {
+            totalNetForces[i] = \
+                calculateForceBarnesHut(objPtr, currOctPtr->child0, {0, 0, 0}, theta)[i] + calculateForceBarnesHut(objPtr, currOctPtr->child1, {0, 0, 0}, theta)[i] + \
+                calculateForceBarnesHut(objPtr, currOctPtr->child2, {0, 0, 0}, theta)[i] + calculateForceBarnesHut(objPtr, currOctPtr->child3, {0, 0, 0}, theta)[i] + \
+                calculateForceBarnesHut(objPtr, currOctPtr->child4, {0, 0, 0}, theta)[i] + calculateForceBarnesHut(objPtr, currOctPtr->child5, {0, 0, 0}, theta)[i] + \
+                calculateForceBarnesHut(objPtr, currOctPtr->child6, {0, 0, 0}, theta)[i] + calculateForceBarnesHut(objPtr, currOctPtr->child7, {0, 0, 0}, theta)[i];
+        }
+        return totalNetForces;
+    }
+}
+
+template <typename T>
+std::vector<std::array<float, 3>> GravitationalEnvironment<T>::getForcesBarnesHut(const float timestep) {
 
     // Clear the Octree
     envOctree.clear();
@@ -142,19 +214,20 @@ std::vector<std::array<double, 3>> GravitationalEnvironment<T>::getForcesBarnesH
     envOctree.build(particlePtrs);
 
     // Calculate the forces
-    std::vector<std::array<double, 3>> forces(nParticles); // Vector to hold the forces
+    std::vector<std::array<float, 3>> forces(nParticles); // Vector to hold the forces
+    float theta = 0.5;
+    std::shared_ptr<Octree<T>> octreePtr = std::make_shared<Octree<T>>(envOctree);
     for (int i = 0; i < nParticles; i++) {
         // Need to implement walking down the tree
-        continue;
+        forces[i] = calculateForceBarnesHut(particlePtrs[i], octreePtr, {0, 0, 0}, theta);
     }
-
     return forces;
 }
     
 
 template <typename T>
 // Update each particle in the environment
-void GravitationalEnvironment<T>::updateAll(const std::vector<std::array<double, 3>>& forces, const double timestep) {
+void GravitationalEnvironment<T>::updateAll(const std::vector<std::array<float, 3>>& forces, const float timestep) {
     for (int i = 0; i < nParticles; i++){
         particlePtrs[i]->update(&(forces[i]), timestep);
     }
@@ -162,10 +235,10 @@ void GravitationalEnvironment<T>::updateAll(const std::vector<std::array<double,
 
 template <typename T>
 // Take a step
-void GravitationalEnvironment<T>::step(const double timestep) {
+void GravitationalEnvironment<T>::step(const float timestep) {
 
     // Get the forces and upate everything
-    std::vector<std::array<double, 3>> forces = getForces(timestep);
+    std::vector<std::array<float, 3>> forces = getForces(timestep);
     updateAll(forces, timestep);
 
     // Update time
@@ -217,12 +290,12 @@ std::string GravitationalEnvironment<T>::getStepLog() const {
 
 template <typename T>
 // Run a simulation
-void GravitationalEnvironment<T>::simulate(const double duration, const double timestep) {
+void GravitationalEnvironment<T>::simulate(const float duration, const float timestep) {
     std::string logStr = getLogHeader();
     std::cout << getLogHeader() + "\n";
 
     // Get number of timesteps and take steps iteratively
-    double nTimesteps = duration / timestep;
+    float nTimesteps = duration / timestep;
     for (int i = 0; i < nTimesteps; i++) {
 
         // If logging, append to log string

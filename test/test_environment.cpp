@@ -10,18 +10,18 @@
 
 //////////// SETUP TESTABLE INSTANCES ////////////
 // Parameters
-double _G = 6.6743e-11;
+float _G = 6.6743e-11;
 
 // Data path
 const char* repoPath = std::getenv("HOOTSIM_PATH");
 std::string dataPath = repoPath == nullptr ? "./data" : std::string(repoPath )+ "/data";
 
 // Initialize particle specs
-double mass = 1E10;
-std::array<double, 3> initial_position1 = {0, 0, 0};
-std::array<double, 3> initial_position2 = {4, 0, 0};
-std::array<double, 3> initial_velocity1 = {0, 0, 0};
-std::array<double, 3> initial_velocity2 = {0, 0, 0};
+float mass = 1E10;
+std::array<float, 3> initial_position1 = {0, 0, 0};
+std::array<float, 3> initial_position2 = {4, 0, 0};
+std::array<float, 3> initial_velocity1 = {0, 0, 0};
+std::array<float, 3> initial_velocity2 = {0, 0, 0};
 
 // Define the particles
 auto particle1Ptr = std::make_shared<Particle>(&initial_position1, &initial_velocity1, mass);
@@ -95,10 +95,10 @@ TEST_CASE("Test getLogHeader") {
 TEST_CASE("Environment getForces") {
 
     // Get forces
-    std::vector<std::array<double, 3>> forces = env1.getForces(0.2);
+    std::vector<std::array<float, 3>> forces = env1.getForces(0.2);
 
     // Expected force magnitude (will be opposite and equal)
-    double fMagExpected = _G * (mass*mass) / 16;
+    float fMagExpected = _G * (mass*mass) / 16;
 
     // Assertions
     CHECK(forces[0][0] - fMagExpected < 1E-7);
@@ -127,8 +127,8 @@ TEST_CASE("Environment Single Step") {
 TEST_CASE("Environment simulate") {
 
     // Set params
-    double duration = 2;
-    double timestep = 1;
+    float duration = 2;
+    float timestep = 1;
 
     // Simulate
     env2.simulate(duration, timestep);

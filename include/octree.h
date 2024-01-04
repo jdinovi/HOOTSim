@@ -30,14 +30,14 @@ class Octree {
         std::array<float, 2> zCoords;
 
         // Octree children --> 0-7 based on 2D convention in postive z, and then 2D convention in negative z, observing from above        
-        std::unique_ptr<Octree<T>> child0;
-        std::unique_ptr<Octree<T>> child1;
-        std::unique_ptr<Octree<T>> child2;
-        std::unique_ptr<Octree<T>> child3;
-        std::unique_ptr<Octree<T>> child4;
-        std::unique_ptr<Octree<T>> child5;
-        std::unique_ptr<Octree<T>> child6;
-        std::unique_ptr<Octree<T>> child7;
+        std::shared_ptr<Octree<T>> child0;
+        std::shared_ptr<Octree<T>> child1;
+        std::shared_ptr<Octree<T>> child2;
+        std::shared_ptr<Octree<T>> child3;
+        std::shared_ptr<Octree<T>> child4;
+        std::shared_ptr<Octree<T>> child5;
+        std::shared_ptr<Octree<T>> child6;
+        std::shared_ptr<Octree<T>> child7;
 
 
 };

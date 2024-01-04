@@ -19,17 +19,17 @@ std::array<float, 2> zCoords = {-10., 10.};
 Octree<Body> myOctree(xCoords, yCoords, zCoords, true);
 
 // Build three bodies for insertion
-double oct_mass = 1;
+float oct_mass = 1;
 float radius = 1E5;
 
-std::array<double, 3> oct_init_pos1 = {5, 5, 6};
-std::array<double, 3> oct_init_velo1 = {0, 0, 0};
+std::array<float, 3> oct_init_pos1 = {5, 5, 6};
+std::array<float, 3> oct_init_velo1 = {0, 0, 0};
 
-std::array<double, 3> oct_init_pos2 = {-2.5, -2.5, 6};
-std::array<double, 3> oct_init_velo2 = {0, 0, 0};
+std::array<float, 3> oct_init_pos2 = {-2.5, -2.5, 6};
+std::array<float, 3> oct_init_velo2 = {0, 0, 0};
 
-std::array<double, 3> oct_init_pos3 = {-7.5, -7.5, 6};
-std::array<double, 3> oct_init_velo3 = {0, 0, 0};
+std::array<float, 3> oct_init_pos3 = {-7.5, -7.5, 6};
+std::array<float, 3> oct_init_velo3 = {0, 0, 0};
 
 std::shared_ptr<Body> body1 = std::make_shared<Body>(&oct_init_pos1, &oct_init_velo1, oct_mass, radius);
 std::shared_ptr<Body> body2 = std::make_shared<Body>(&oct_init_pos2, &oct_init_velo2, oct_mass, radius);

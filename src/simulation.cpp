@@ -14,11 +14,11 @@ int main() {
     // float timestep = 0.5;
 
     // Initialize particle specs
-    double mass = 1E9;
-    std::array<double, 3> initial_position1 = {0, 0, 0};
-    std::array<double, 3> initial_position2 = {4, 0, 0};
-    std::array<double, 3> initial_velocity1 = {0, 0, 0};
-    std::array<double, 3> initial_velocity2 = {0, 0, 0};
+    float mass = 1E9;
+    std::array<float, 3> initial_position1 = {0, 0, 0};
+    std::array<float, 3> initial_position2 = {4, 0, 0};
+    std::array<float, 3> initial_velocity1 = {0, 0, 0};
+    std::array<float, 3> initial_velocity2 = {0, 0, 0};
 
     
     // Define the particles

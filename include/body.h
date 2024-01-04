@@ -11,7 +11,7 @@ class Body : public Particle {
     public:
         
         // Child class constructor
-        explicit Body(const std::array<double, 3>* initial_position, const std::array<double, 3>* initial_velocity, double mass, float radius=0);
+        explicit Body(const std::array<float, 3>* initial_position, const std::array<float, 3>* initial_velocity, float mass, float radius=0);
 
         // New physical member
         float radius;
