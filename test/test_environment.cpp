@@ -2,6 +2,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <math.h>
 
 #include "../include/doctest.h" 
 #include "../include/particle.h"
