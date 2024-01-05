@@ -64,3 +64,7 @@ TEST_CASE("Uniform") {
     CHECK(inRange);
     CHECK(valVec.size() == n);
 }
+
+TEST_CASE("Dummy Executable") {
+    CHECK(dummyExecutable() == 0);
+}

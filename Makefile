@@ -62,7 +62,7 @@ coverage:
 	for filename in $(filter-out $(SRC_DIR)/simulation.cpp, $(SRCS)); do \
 		obj_file=$(OBJ_DIR)/$${filename%.cpp}.o; \
 		result=$$(gcov --object-directory=$(OBJ_DIR) $${filename} -n | grep -v ".*simulation.*" | grep -v ".*\.h" | grep -A 1 "src"); \
-		results+="\n\n$$result"; \
+		results="$$results\n\n$$result"; \
 		lines=$$(echo $$result | grep -Eo "[0-9]+$$"); \
 		line_pct=$$(echo $$result | grep -Eo '([0-9]+\.[0-9]+)\%' | sed 's/\%//'); \
 		total_lines=$$((total_lines + lines)); \

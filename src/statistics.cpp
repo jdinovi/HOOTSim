@@ -2,3 +2,7 @@
 
 std::random_device rd;
 std::mt19937 GENERATOR(rd());
+
+int dummyExecutable() {
+    return 0;
+}

@@ -16,3 +16,6 @@ std::vector<float> sampleFromDistribution(size_t n, Distribution& distribution) 
     }
     return samples;
 }
+
+// Dummy executable to work with testing framework
+int dummyExecutable();
