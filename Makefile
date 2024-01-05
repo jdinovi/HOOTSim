@@ -19,7 +19,7 @@ TEST_SRCS = $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OBJS = $(patsubst $(TEST_DIR)/%.cpp,$(TEST_OBJ_DIR)/%.o,$(TEST_SRCS))
 
 # Include directories
-INC_DIRS = -I $(INC_DIR) # -I /opt/homebrew/Cellar/yaml-cpp/0.8.0/include
+INC_DIRS = -I $(INC_DIR) #-I /opt/homebrew/Cellar/yaml-cpp/0.8.0/include
 
 # Linking step for src files
 $(BIN_DIR)/$(TARGET): $(OBJS)
