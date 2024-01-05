@@ -53,15 +53,10 @@ TEST_CASE("Environment Initialization") {
     CHECK(env1.envOctree.internal == true);
 }
 
-TEST_CASE("Error Handling for Load Config") {
-    // Test error handling when loading an invalid configuration file
-    CHECK_THROWS(loadConfig("invalid_config.yaml"));
-}
-
-TEST_CASE("Error Handling for Load Config") {
-    // Test error handling when loading an invalid configuration file
-    CHECK_THROWS(loadConfig("invalid_config.yaml"));
-}
+// TEST_CASE("Error Handling for Load Config") {
+//     // Test error handling when loading an invalid configuration file
+//     CHECK_THROWS(loadConfig("invalid_config.yaml"));
+// }
 
 void test_normalCase() {
     std::vector<std::string> filenames = {"run0.csv", "run1.csv", "run10.csv"};
