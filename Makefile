@@ -54,6 +54,7 @@ test: $(BIN_DIR)/$(TEST_TARGET)
 
 .PHONY: coverage
 coverage:
+	@set -x
 	@make build
 	@make test
 	@results=""; \
