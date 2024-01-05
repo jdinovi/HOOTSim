@@ -59,7 +59,7 @@ TEST_CASE("Uniform") {
     // Check they're in the sampling range
     bool inRange = true;
     for (float v : valVec) {
-        inRange &= (v <= 5 & v >= -5);
+        inRange &= ((v <= 5) & (v >= -5));
     }
     CHECK(inRange);
     CHECK(valVec.size() == n);
