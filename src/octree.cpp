@@ -5,11 +5,11 @@
 
 template <typename T>
 Octree<T>::Octree(std::array<float, 2>& xCoords, std::array<float, 2>& yCoords, std::array<float, 2>& zCoords, bool internal)
-    : totalMass(new float(0)), internal(internal), xCoords(xCoords), yCoords(yCoords), zCoords(zCoords) {};
+    : totalMass(0), internal(internal), xCoords(xCoords), yCoords(yCoords), zCoords(zCoords) {};
 
 // Recursively set every child to null in the tree, but preserving the tree
 template <typename T>
-void Octree<T>::clear() {    
+void Octree<T>::clearOctree() {    
     // Clear the children
     child0.reset();
     child1.reset();
@@ -22,7 +22,7 @@ void Octree<T>::clear() {
 
     // Clear the members
     objPtrs.clear();
-    *totalMass = 0.0;
+    totalMass = 0;
 }
 
 template <typename T>
@@ -40,17 +40,17 @@ void Octree<T>::insert(std::shared_ptr<T> objPtr) {
     objPtrs.push_back(objPtr);
 
     // Instantiate the center of mass if it doesn't exist; update it otherwise
-    float newTotalMass = *totalMass + objPtr->mass;
-    if (*totalMass == 0) {
+    float newTotalMass = totalMass + objPtr->mass;
+    if (totalMass == 0) {
         std::copy(std::begin(objPtr->position), std::end(objPtr->position), std::begin(centerOfMass));
     } else {
         for (int i = 0; i < 3; i++) {
-            centerOfMass[i] = (((centerOfMass[i] * (*totalMass))) + ((objPtr->position[i]) * (objPtr->mass))) / (newTotalMass);
+            centerOfMass[i] = (((centerOfMass[i] * totalMass)) + ((objPtr->position[i]) * (objPtr->mass))) / (newTotalMass);
         }
     }
 
     // Update the total mass
-    *totalMass = newTotalMass;
+    totalMass += objPtr->mass;
 
     // Deal with recursive insertion based on internal vs external nodes //
 

@@ -162,7 +162,7 @@ std::array<float, 3> GravitationalEnvironment<T>::calculateForceBarnesHut(std::s
 
     // If ratio s / d is < theta, treat the node as a single body and calculate force from currPtr on objPtr; return netForce plus recursive call
     if (ratio < theta) {
-        float prop_to_force = G * objPtr->mass * (*(currOctPtr->totalMass));
+        float prop_to_force = G * objPtr->mass * (currOctPtr->totalMass);
         float r_dep;
 
         for (int k = 0; k < 3; k++) {
@@ -200,7 +200,7 @@ template <typename T>
 std::vector<std::array<float, 3>> GravitationalEnvironment<T>::getForcesBarnesHut(const float timestep) {
 
     // Clear the Octree
-    envOctree.clear();
+    envOctree.clearOctree();
 
     // Get the extreme coordinate locations
     std::array<float, 2> extremeXCoords = {0, 0};

@@ -13,7 +13,7 @@ class Octree {
         Octree(std::array<float, 2>& xCoords, std::array<float, 2>& yCoords, std::array<float, 2>& zCoords, bool internal);
 
         // Member functions
-        void clear();
+        void clearOctree();
         void updateCoords(std::array<float, 2>& newXCoords, std::array<float, 2>& newYCoords, std::array<float, 2>& newZCoords);
         void insert(std::shared_ptr<T> objPtr);
         void build(std::vector<std::shared_ptr<T>>& objPtrs);
@@ -21,7 +21,7 @@ class Octree {
         // Members
         std::vector<std::shared_ptr<T>> objPtrs;
         std::array<float, 3> centerOfMass;
-        float* totalMass;
+        float totalMass;
         bool internal;
 
         // Dimensions of the current octant
