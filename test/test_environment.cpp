@@ -227,14 +227,15 @@ void checkDefaultEnv(GravitationalEnvironment<Particle>& env) {
     bool zCheck = true;
     for (auto pPtr : env.particlePtrs) {
         massCheck &= pPtr->mass == 100000000;
-        xCheck &= (pPtr->position[0] <= 4 & pPtr->position[0] >= 0);
-        yCheck &= (pPtr->position[1] <= 4 & pPtr->position[1] >= -2);
-        zCheck &= (pPtr->position[2] <= 10 & pPtr->position[2] >= 1);
+        xCheck &= (pPtr->position[0] <= 4 && pPtr->position[0] >= 0);
+        yCheck &= (pPtr->position[1] <= 4 && pPtr->position[1] >= -2);
+        zCheck &= (pPtr->position[2] <= 10 && pPtr->position[2] >= 1);
     }
     CHECK(env.nParticles == 1000);
     CHECK(xCheck);
     CHECK(yCheck);
     CHECK(zCheck);
+    CHECK(massCheck);
 }
 TEST_CASE("Load Particles From Config") {
 
@@ -262,61 +263,6 @@ TEST_CASE("Load Config File") {
     CHECK(defaultConfig["global"]["nParticles"] == "1000");
 }
 
-void checkDefaultEnv(GravitationalEnvironment<Particle>& env) {
-    // Check that it all looks good... that default vals are:
-// mass:
-//   dist: constant
-//   val: 100000000
-// x:
-//   dist: uniform
-//   min: 0
-//   max: 4
-// y:
-//   dist: uniform
-//   min: -2
-//   max: 4
-// z:
-//   dist: uniform
-//   min: 1
-//   max: 10
-// vx:
-//   dist: uniform
-//   min: 0
-//   max: 4
-// vy:
-//   dist: uniform
-//   min: -2
-//   max: 4
-// vz:
-//   dist: uniform
-//   min: -10
-//   max: 10
-    bool massCheck = true;
-    bool xCheck = true;
-    bool yCheck = true;
-    bool zCheck = true;
-    for (auto pPtr : env.particlePtrs) {
-        massCheck &= pPtr->mass == 100000000;
-        xCheck &= (pPtr->position[0] <= 4 & pPtr->position[0] >= 0);
-        yCheck &= (pPtr->position[1] <= 4 & pPtr->position[1] >= -2);
-        zCheck &= (pPtr->position[2] <= 10 & pPtr->position[2] >= 1);
-    }
-    CHECK(env.nParticles == 1000);
-    CHECK(xCheck);
-    CHECK(yCheck);
-    CHECK(zCheck);
-}
-TEST_CASE("Load Particles From Config") {
-
-    // Get a defualt environment class
-    GravitationalEnvironment<Particle> defaultEnv("default.yaml", true);
-    GravitationalEnvironment<Particle> defaultEnv2("default.yaml", true, "prefixyprefix");
-    
-    // Check 'em
-    checkDefaultEnv(defaultEnv);
-    checkDefaultEnv(defaultEnv2);
-    CHECK(defaultEnv2.logFileName == dataPath + "/prefixyprefix0.csv");
-}
 
 TEST_CASE("Barnes-Hut Algorithm Force Calculation") {
 

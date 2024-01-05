@@ -21,10 +21,8 @@ namespace fs = std::filesystem;
 float G = 6.6743e-11;
 #include "../include/statistics.h"
 
-
-namespace fs = std::filesystem;
-double G = 6.6743e-11;
-std::string REPOPATH = std::string(std::getenv("HOOTSIM_PATH"));
+char* REPOPATH_ = std::getenv("HOOTSIM_PATH");
+std::string REPOPATH = REPOPATH_ == nullptr ? "." : std::string(REPOPATH_);
 
 
 // Load config file to a hashmap. These files are of the form (key: param, value: the distribution parameters).
@@ -146,33 +144,42 @@ GravitationalEnvironment<T>::GravitationalEnvironment(const std::vector<std::sha
         logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
         }
     }
+
+// Constructor for config files
 template <typename T>
-GravitationalEnvironment<T>::GravitationalEnvironment(const std::string configFileName, const bool log, std::string logFilePrefix)
-    : log(log), time(0) {
-
-        // Get particles
-        loadParticlesFromConfig(configFileName);
-
-        // Declare the number of particles
-        nParticles = particlePtrs.size();
-
-        // Create a log file if we want one
-        if (log == true) {
-            
-            // Get a vector of the filenames in the data directory
-            std::vector<std::string> lastLogFileNames;
-            std::string dataPath = REPOPATH + "/data";
-            for (const auto& entry : fs::directory_iterator(dataPath)) {
-                if (fs::is_regular_file(entry.status())) {
-                    lastLogFileNames.push_back(entry.path().filename().string());
-                }
-            }
-
-            // Get the largest log file number and create new log file
-            int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
-            logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
-        }
+GravitationalEnvironment<T>::GravitationalEnvironment(const std::string configFileName, const bool log, std::string logFilePrefix, std::string forceAlgorithm)
+    : log(log), time(0), envOctree(defaultXCoords, defaultYCoords, defaultZCoords, true) {
+    // Determine which algorithm to use
+    if (forceAlgorithm == "pair-wise") {
+        getForces = std::bind(&GravitationalEnvironment::getForcesPairWise, this, std::placeholders::_1);
+    } else {
+        getForces = std::bind(&GravitationalEnvironment::getForcesBarnesHut, this, std::placeholders::_1);
     }
+
+    // Get particles
+    loadParticlesFromConfig(configFileName);
+
+    // Declare the number of particles
+    nParticles = particlePtrs.size();
+
+    // Create a log file if we want one
+    if (log == true) {
+        
+        // Get a vector of the filenames in the data directory
+        std::vector<std::string> lastLogFileNames;
+        std::string dataPath = REPOPATH + "/data";
+        for (const auto& entry : fs::directory_iterator(dataPath)) {
+            if (fs::is_regular_file(entry.status())) {
+                lastLogFileNames.push_back(entry.path().filename().string());
+            }
+        }
+
+        // Get the largest log file number and create new log file
+        int lastLogNum = getLargestLabelNumber(lastLogFileNames, logFilePrefix);
+        logFileName = dataPath + "/" + logFilePrefix + std::to_string(lastLogNum + 1) + ".csv";
+    }
+
+}
 
 
 // Load a full environment from the configuration file
@@ -187,7 +194,7 @@ void GravitationalEnvironment<T>::loadParticlesFromConfig(const std::string conf
     int nParticles = std::stoi(globalConfigMap.at("nParticles"));
 
     // Generate distributions for each param
-    std::map<std::string, std::vector<double>> envParams;
+    std::map<std::string, std::vector<float>> envParams;
 
     // Iterate through the configuration and sample particles according to config prescirption
     for (auto const& [property, propertyDist] : configMap) {
@@ -199,15 +206,15 @@ void GravitationalEnvironment<T>::loadParticlesFromConfig(const std::string conf
 
             // Sample from the distribution for the property
             if (distType == "constant") { // Constant dist
-                envParams[property] = std::vector<double> (nParticles, std::stod(propertyDist.at("val")));
+                envParams[property] = std::vector<float> (nParticles, std::stod(propertyDist.at("val")));
             } else if (distType == "normal") { // Normal dist
-                double mu = std::stod(propertyDist.at("mu"));
-                double sigma = std::stod(propertyDist.at("sigma"));
+                float mu = std::stod(propertyDist.at("mu"));
+                float sigma = std::stod(propertyDist.at("sigma"));
                 std::normal_distribution<> normalDist(mu, sigma);
                 envParams[property] = sampleFromDistribution(nParticles, normalDist);
             }  else if (distType == "uniform") { // Uniform dist
-                double min = std::stod(propertyDist.at("min"));
-                double max = std::stod(propertyDist.at("max"));
+                float min = std::stod(propertyDist.at("min"));
+                float max = std::stod(propertyDist.at("max"));
                 std::uniform_real_distribution<> uniformDist(min, max);
                 envParams[property] = sampleFromDistribution(nParticles, uniformDist);
             } else {
@@ -217,14 +224,14 @@ void GravitationalEnvironment<T>::loadParticlesFromConfig(const std::string conf
     }
 
     // Declare particle pointer vector
-    std::vector<std::array<double, 3>> positions(nParticles);
-    std::vector<std::array<double, 3>> velocities(nParticles);
+    std::vector<std::array<float, 3>> positions(nParticles);
+    std::vector<std::array<float, 3>> velocities(nParticles);
     for (int i = 0; i < nParticles; i++) {
 
         // Populate positions and velocities
         positions[i] = {envParams.at("x")[i], envParams.at("y")[i], envParams.at("z")[i]};
         velocities[i] = {envParams.at("vx")[i], envParams.at("vy")[i], envParams.at("vz")[i]};
-        double mass = envParams.at("mass")[i];
+        float mass = envParams.at("mass")[i];
 
         // Create Particle instance with pointers to elements in the positions and velocities vectors
         particlePtrs.push_back(std::make_shared<T>(&positions[i], &velocities[i], mass));

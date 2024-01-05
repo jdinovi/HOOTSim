@@ -13,9 +13,8 @@ class GravitationalEnvironment{
     
     public:
         // Constructors
-        // GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log);
         GravitationalEnvironment(const std::vector<std::shared_ptr<T>>& particlePtrs, const bool log, std::string logFilePrefix="run", std::string forceAlgorithm="pair-wise");
-        GravitationalEnvironment(const std::string configFileName, const bool log, std::string logFilePrefix = "run");
+        GravitationalEnvironment(const std::string configFileName, const bool log, std::string logFilePrefix = "run", std::string forceAlgorithm="pair-wise");
 
         // Callable member that we will set to pair-wise or Barnes-Hut force algorithm
         std::function<std::vector<std::array<float, 3>>(float)> getForces;

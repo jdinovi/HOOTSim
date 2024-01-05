@@ -7,12 +7,12 @@
 
 TEST_CASE("Constant") {
     // Sample
-    std::vector<double> valVec(12, std::stod("6.32"));
+    std::vector<float> valVec(12, std::stod("6.32"));
 
     // Check that all the values are equal
     bool allEq = true;
-    for (double v : valVec) {
-        allEq &= (v == 6.32);
+    for (float v : valVec) {
+        allEq &= (v - 6.32 < 0.001);
     }
     CHECK(allEq);
     CHECK(valVec.size() == 12);
@@ -22,19 +22,19 @@ TEST_CASE("Normal") {
     // Sample
     int n = 1000;
     std::normal_distribution<> normalDist(0, 1);
-    std::vector<double> valVec = sampleFromDistribution(n, normalDist);
+    std::vector<float> valVec = sampleFromDistribution(n, normalDist);
 
     // Check the mean is near 0
-    double mean = 0;
-    for (double v : valVec) {
+    float mean = 0;
+    for (float v : valVec) {
         mean += v;
     }
     mean /= n;
     CHECK(abs(mean) < 0.1);
 
     // Check std is near 1
-    double std = 0;
-    for (double v : valVec) {
+    float std = 0;
+    for (float v : valVec) {
         std += v*v;
     }
     std = pow(std / n, 0.5);
@@ -46,11 +46,11 @@ TEST_CASE("Uniform") {
     // Sample
     int n = 1000;
     std::uniform_real_distribution<> uniformDis(-5, 5);
-    std::vector<double> valVec = sampleFromDistribution(n, uniformDis);
+    std::vector<float> valVec = sampleFromDistribution(n, uniformDis);
 
     // Check the mean is near 0
-    double mean = 0;
-    for (double v : valVec) {
+    float mean = 0;
+    for (float v : valVec) {
         mean += v;
     }
     mean /= n;
@@ -58,7 +58,7 @@ TEST_CASE("Uniform") {
 
     // Check they're in the sampling range
     bool inRange = true;
-    for (double v : valVec) {
+    for (float v : valVec) {
         inRange &= (v <= 5 & v >= -5);
     }
     CHECK(inRange);
