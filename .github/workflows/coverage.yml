@@ -19,6 +19,9 @@ jobs:
 
     - name: Evaluate coverage
       run: |
+        make coverage > coverage_output.txt
+        cat coverage_output.txt
+
         COVERAGE=$(make coverage | grep 'TOTAL COVERAGE' | grep -Eo '[0-9]+')
 
         if [ "$COVERAGE" -gt 89 ]; then
