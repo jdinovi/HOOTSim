@@ -1,6 +1,8 @@
 CXX = g++
 CXXFLAGS = -g -std=c++17 -Wall --coverage
-LDFLAGS = -lyaml-cpp
+# LINE BELOW REQUIRED FOR JOHN'S LOCAL CONFIGURATIONS #
+# LDFLAGS = -L/opt/homebrew/Cellar/yaml-cpp/0.8.0/lib -lyaml-cpp
+LDLFLAGS = -lyaml-cpp
 SRC_DIR = src
 INC_DIR = include
 OBJ_DIR = obj
@@ -19,7 +21,9 @@ TEST_SRCS = $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OBJS = $(patsubst $(TEST_DIR)/%.cpp,$(TEST_OBJ_DIR)/%.o,$(TEST_SRCS))
 
 # Include directories
-INC_DIRS = -I $(INC_DIR) #-I /opt/homebrew/Cellar/yaml-cpp/0.8.0/include
+# LINE BELOW REQUIRED FOR JOHN'S LOCAL CONFIGURATIONS #
+# INC_DIRS = -I $(INC_DIR) -I /opt/homebrew/Cellar/yaml-cpp/0.8.0/include
+INC_DIRS = -I $(INC_DIR)
 
 # Linking step for src files
 $(BIN_DIR)/$(TARGET): $(OBJS)
