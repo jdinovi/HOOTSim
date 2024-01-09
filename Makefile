@@ -2,7 +2,7 @@ CXX = g++
 CXXFLAGS = -g -std=c++17 -Wall --coverage
 # LINE BELOW REQUIRED FOR JOHN'S LOCAL CONFIGURATIONS #
 # LDFLAGS = -L/opt/homebrew/Cellar/yaml-cpp/0.8.0/lib -lyaml-cpp
-LDLFLAGS = -lyaml-cpp
+LDFLAGS = -lyaml-cpp
 SRC_DIR = src
 INC_DIR = include
 OBJ_DIR = obj
