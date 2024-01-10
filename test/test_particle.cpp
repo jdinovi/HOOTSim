@@ -6,9 +6,9 @@
 TEST_CASE("Particle Initialization") {
 
     // Initialize particle specs
-    double mass = 1;
-    std::array<double, 3> initial_position1 = {0, 0, 0};
-    std::array<double, 3> initial_velocity1 = {0, 0, 0};
+    float mass = 1;
+    std::array<float, 3> initial_position1 = {0, 0, 0};
+    std::array<float, 3> initial_velocity1 = {0, 0, 0};
 
     // Define the particle
     Particle particle1(&initial_position1, &initial_velocity1, mass);
@@ -22,15 +22,15 @@ TEST_CASE("Particle Initialization") {
 TEST_CASE("Particle Update") {
 
     // Parameters for a timestep
-    double timestep = 1;
+    float timestep = 1;
 
     // Initialize particle specs
-    double mass = 1;
-    std::array<double, 3> initial_position1 = {0, 0, 0};
-    std::array<double, 3> initial_velocity1 = {0, 0, 0};
+    float mass = 1;
+    std::array<float, 3> initial_position1 = {0, 0, 0};
+    std::array<float, 3> initial_velocity1 = {0, 0, 0};
 
     // Define the force
-    std::array<double, 3> force = {3, 0, 0};
+    std::array<float, 3> force = {3, 0, 0};
 
     // Define the particle
     Particle particle1(&initial_position1, &initial_velocity1, mass);

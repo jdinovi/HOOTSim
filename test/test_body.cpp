@@ -9,9 +9,9 @@
 TEST_CASE("Body Initialization - WITH Radius") {
 
     // Initialize particle specs
-    double mass = 1;
-    std::array<double, 3> initial_position1 = {0, 0, 0};
-    std::array<double, 3> initial_velocity1 = {0, 0, 0};
+    float mass = 1;
+    std::array<float, 3> initial_position1 = {0, 0, 0};
+    std::array<float, 3> initial_velocity1 = {0, 0, 0};
     float radius = 1E5;
 
     // Define the particle
@@ -27,9 +27,9 @@ TEST_CASE("Body Initialization - WITH Radius") {
 TEST_CASE("Body Initialization - WITHOUT Radius") {
 
     // Initialize particle specs
-    double mass = 1;
-    std::array<double, 3> initial_position1 = {0, 0, 0};
-    std::array<double, 3> initial_velocity1 = {0, 0, 0};
+    float mass = 1;
+    std::array<float, 3> initial_position1 = {0, 0, 0};
+    std::array<float, 3> initial_velocity1 = {0, 0, 0};
 
     // Define the particle
     Body body1(&initial_position1, &initial_velocity1, mass);
@@ -45,16 +45,16 @@ TEST_CASE("Body Initialization - WITHOUT Radius") {
 TEST_CASE("Body Update") {
 
     // Parameters for a timestep
-    double timestep = 1;
+    float timestep = 1;
 
     // Initialize particle specs
-    double mass = 1;
+    float mass = 1;
     float radius = 1E5;
-    std::array<double, 3> initial_position1 = {0, 0, 0};
-    std::array<double, 3> initial_velocity1 = {0, 0, 0};
+    std::array<float, 3> initial_position1 = {0, 0, 0};
+    std::array<float, 3> initial_velocity1 = {0, 0, 0};
 
     // Define the force
-    std::array<double, 3> force = {3, 0, 0};
+    std::array<float, 3> force = {3, 0, 0};
 
     // Define the particle
     Body body1(&initial_position1, &initial_velocity1, mass, radius);

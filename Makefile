@@ -1,5 +1,7 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -Wall --coverage
+CXXFLAGS = -g -std=c++17 -Wall --coverage
+# LINE BELOW REQUIRED FOR JOHN'S LOCAL CONFIGURATIONS #
+# LDFLAGS = -L/opt/homebrew/Cellar/yaml-cpp/0.8.0/lib -lyaml-cpp
 LDFLAGS = -lyaml-cpp
 SRC_DIR = src
 INC_DIR = include
@@ -19,6 +21,8 @@ TEST_SRCS = $(wildcard $(TEST_DIR)/*.cpp)
 TEST_OBJS = $(patsubst $(TEST_DIR)/%.cpp,$(TEST_OBJ_DIR)/%.o,$(TEST_SRCS))
 
 # Include directories
+# LINE BELOW REQUIRED FOR JOHN'S LOCAL CONFIGURATIONS #
+# INC_DIRS = -I $(INC_DIR) -I /opt/homebrew/Cellar/yaml-cpp/0.8.0/include
 INC_DIRS = -I $(INC_DIR)
 
 # Linking step for src files
@@ -62,7 +66,7 @@ coverage:
 	for filename in $(filter-out $(SRC_DIR)/simulation.cpp, $(SRCS)); do \
 		obj_file=$(OBJ_DIR)/$${filename%.cpp}.o; \
 		result=$$(gcov --object-directory=$(OBJ_DIR) $${filename} -n | grep -v ".*simulation.*" | grep -v ".*\.h" | grep -A 1 "src"); \
-		results+="\n\n$$result"; \
+		results="$$results\n\n$$result"; \
 		lines=$$(echo $$result | grep -Eo "[0-9]+$$"); \
 		line_pct=$$(echo $$result | grep -Eo '([0-9]+\.[0-9]+)\%' | sed 's/\%//'); \
 		total_lines=$$((total_lines + lines)); \
