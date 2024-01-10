@@ -353,9 +353,9 @@ std::vector<std::array<float, 3>> GravitationalEnvironment<T>::getForcesBarnesHu
     envOctree.clearOctree();
 
     // Get the extreme coordinate locations
-    std::array<float, 2> extremeXCoords = {0, 0};
-    std::array<float, 2> extremeYCoords = {0, 0};
-    std::array<float, 2> extremeZCoords = {0, 0};
+    std::array<float, 2> extremeXCoords = {static_cast<float>(particlePtrs[0]->position[0]), static_cast<float>(particlePtrs[0]->position[0])};
+    std::array<float, 2> extremeYCoords = {static_cast<float>(particlePtrs[0]->position[1]), static_cast<float>(particlePtrs[0]->position[1])};
+    std::array<float, 2> extremeZCoords = {static_cast<float>(particlePtrs[0]->position[2]), static_cast<float>(particlePtrs[0]->position[2])};
 
     for (int i = 0; i < nParticles; i++) {
         extremeXCoords[0] = std::min(extremeXCoords[0], static_cast<float>(particlePtrs[i]->position[0]));
