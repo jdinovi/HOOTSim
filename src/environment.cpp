@@ -10,6 +10,8 @@
 #include <utility>
 #include <algorithm>
 #include <yaml-cpp/yaml.h>
+#include <thread>
+#include <future>
 
 #include "../include/environment.h"
 #include "../include/body.h"
@@ -377,14 +379,39 @@ std::vector<std::array<float, 3>> GravitationalEnvironment<T>::getForcesBarnesHu
     // Calculate the forces
     std::vector<std::array<float, 3>> forces(nParticles); // Vector to hold the forces
     float theta = 0.5;
+
+    // Make a pointer to the Octree
     std::shared_ptr<Octree<T>> octreePtr = std::make_shared<Octree<T>>(envOctree);
-    for (int i = 0; i < nParticles; i++) {
-        // Need to implement walking down the tree
-        forces[i] = calculateForceBarnesHut(particlePtrs[i], octreePtr, {0, 0, 0}, theta);
+
+    // Define function to calculate force for given indices
+    auto calculateForce = [&](int start, int end) {
+        for (int i = start; i < end; i++) {
+            forces[i] = calculateForceBarnesHut(particlePtrs[i], octreePtr, std::array<float, 3> {0, 0, 0}, theta);
+        }
+    };
+
+    // Split the work evenly across available cores
+    int numThreads = std::thread::hardware_concurrency();
+    int particlesPerThread = nParticles / numThreads;
+
+    // Vector to store futures
+    std::vector<std::future<void>> futures;
+
+    for (int i = 0; i < numThreads; i++) {
+        int start = i * particlesPerThread;
+        int end = (i == numThreads - 1) ? nParticles : (i + 1) * particlesPerThread;
+
+        // Store the future in the vector
+        futures.emplace_back(std::async(std::launch::async, calculateForce, start, end));
     }
+
+    // Make sure all the futures evaluate
+    for (auto &future : futures) {
+        future.wait();
+    }
+
     return forces;
 }
-    
 
 template <typename T>
 // Update each particle in the environment
