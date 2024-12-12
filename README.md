@@ -3,6 +3,10 @@
 # HOOTSim
 N-Body Simulator
 
+<p align="center">
+  <img src="hootsim_logo.png" alt="drawing" width="400"/>
+</p>
+
 ## Setup
 ```
 git clone https://github.com/jdinovi/HOOTSim.git
